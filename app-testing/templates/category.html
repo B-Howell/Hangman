@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Hangman</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</head>
+<body>
+    <div class="container">
+        
+        <div class="header-container">
+            <h1 class="header1">Hangman</h1>
+            <h2 class="header">Choose A Category</h2>
+        </div>
+
+        <div class="left-right-container">
+        
+            <div class="left-container">
+                <img class="img-pad" id="hangman-image" src="{{ url_for('static', filename='img/stage0.png') }}">
+            </div>
+            
+            <div class="right-container">
+            </div>
+            
+        </div>
+
+        <div class="letter-container">
+            <form class="form-category" method="POST" action="{{ url_for('category') }}">
+                <button class="category-button" type="submit" name="category" value="Animals">Animals</button>
+                <button class="category-button" type="submit" name="category" value="Brands">Brands</button>
+                <button class="category-button" type="submit" name="category" value="Countries">Countries</button>
+                <button class="category-button" type="submit" name="category" value="Cities">Cities</button><br/>
+                <button class="category-button" type="submit" name="category" value="Fruits">Fruits</button>
+                <button class="category-button" type="submit" name="category" value="Instruments">Instruments</button>
+                <button class="category-button" type="submit" name="category" value="Professions">Professions</button>
+                <button class="category-button" type="submit" name="category" value="Sports">Sports</button>
+            </form>
+        </div>
+
+    </div>
+</body>
+</html>

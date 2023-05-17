@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Hangman - Play</title>
+
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+
+<body>
+  <div class="container">
+    
+    <div class="header-container">
+      <h1 class="header1">Hangman</h1>    
+      <h2 class="header">{{ category }}</h2>
+    </div>
+  
+    <div class="left-right-container">
+        
+      <div class="left-container">
+        <img class="img-pad" id="hangman-image" src="{{ url_for('static', filename='img/stage0.png') }}">
+
+        <script>
+          window.onload = function() {
+            var lives = {{ lives }};
+              var hangmanImage = document.getElementById("hangman-image");
+            
+              if (lives == 6) {
+                hangmanImage.src = "{{ url_for('static', filename='img/stage0.png') }}";
+              } else if (lives == 5) {
+                hangmanImage.src = "{{ url_for('static', filename='img/stage1.png') }}";
+              } else if (lives == 4) {
+                hangmanImage.src = "{{ url_for('static', filename='img/stage2.png') }}";
+              } else if (lives == 3) {
+                hangmanImage.src = "{{ url_for('static', filename='img/stage3.png') }}";
+              } else if (lives == 2) {
+                hangmanImage.src = "{{ url_for('static', filename='img/stage4.png') }}";
+              } else if (lives == 1) {
+                hangmanImage.src = "{{ url_for('static', filename='img/stage5.png') }}";
+              } else if (lives == 0){
+                hangmanImage.src = "{{ url_for('static', filename='img/stage6.png') }}";
+              } 
+          }
+        </script>
+      </div>
+      <div class="right-container">
+        <h3 class="text-pad"><p>{{ hidden_word }}</p></h3>
+
+        <h3><p class="guessed-letters">Guessed letters: {{ ' '.join(incorrect_letters) }}</p></h3>
+      </div>
+    </div>
+
+    <div class="letter-container">
+      
+        <form id="letter-form" method="POST" action="{{ url_for('play') }}">
+          {% for letter in 'ABCDEFGHIJKLM' %}
+            <button class="letter-button" name="letter" value="{{ letter }}">{{ letter }}</button>
+          {% endfor %}<br/>
+          {% for letter in 'NOPQRSTUVWXYZ' %}
+            <button class="letter-button" name="letter" value="{{ letter }}">{{ letter }}</button>
+          {% endfor %}
+        </form>
+
+        <form action="{{ url_for('category') }}" method="get">
+          <button class="new-game-button" type="submit">NEW GAME</button>
+        </form>
+
+    </div>
+</body>
+</html>

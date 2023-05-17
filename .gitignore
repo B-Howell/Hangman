@@ -1,0 +1,14 @@
+.terraform.lock.hcl
+.terraform/
+terraform.tfstate
+terraform.tfstate.backup
+
+__pycache__/
+hangman_words.cpython-311.pyc
+appv1/
+etc/
+resume-css/
+
+Diagram.svg
+diagram.xml
+Hangman.svg
