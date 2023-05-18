@@ -462,8 +462,8 @@ resource "aws_ecs_task_definition" "task_definition" {
   requires_compatibilities = ["FARGATE"]
   task_role_arn            = var.execution-role-arn
   execution_role_arn       = var.execution-role-arn
-  cpu                      = 512
-  memory                   = 1024
+  cpu                      = 256
+  memory                   = 512
 
   container_definitions = jsonencode([
     {
@@ -486,9 +486,13 @@ resource "aws_ecs_service" "service" {
   name = var.service-name
   cluster = aws_ecs_cluster.cluster.id
   task_definition = aws_ecs_task_definition.task_definition.id
-  desired_count = 2
+  desired_count = 1
   
-
+  deployment_circuit_breaker {
+    enable = true
+    rollback = true
+  }
+  
   network_configuration {
     security_groups = [aws_security_group.ecs-sg.id]
     subnets = [aws_subnet.private_1.id, aws_subnet.private_2.id]
@@ -498,12 +502,39 @@ resource "aws_ecs_service" "service" {
     target_group_arn = aws_lb_target_group.target-group.arn
     container_name = var.container-name
     container_port = var.container-port
-
   }
 }
 
-#----------------------------------------------------------#
+resource "aws_appautoscaling_target" "auto_scaling" {
+  max_capacity       = 4
+  min_capacity       = 1
+  resource_id        = "service/${aws_ecs_cluster.cluster.name}/${aws_ecs_service.service.name}"
+  scalable_dimension = "ecs:service:DesiredCount"
+  service_namespace  = "ecs"
+}
+
+resource "aws_appautoscaling_policy" "auto_scaling_policy" {
+  name               = "Hangman-AutoScaling"
+  policy_type        = "TargetTrackingScaling"
+  resource_id        = aws_appautoscaling_target.auto_scaling.resource_id
+  scalable_dimension = aws_appautoscaling_target.auto_scaling.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.auto_scaling.service_namespace
+
+  target_tracking_scaling_policy_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ECSServiceAverageCPUUtilization"
+    }
+    target_value       = 70
+    scale_in_cooldown  = 60
+    scale_out_cooldown = 60
+  }
+}
+
 #-----------------------API-Gateway------------------------#
+#- Creates an HTTP API Gateway that links to the listener -#
+#- on the ALB in the ECS Fargate Cluster and uses the -----#
+#- custom domain name hangman-api.brettmhowell.com to -----#
+#- connect to my website. ---------------------------------#
 #----------------------------------------------------------#
 
 resource "aws_apigatewayv2_vpc_link" "vpc-link" {
@@ -545,3 +576,6 @@ resource "aws_apigatewayv2_api_mapping" "mapping" {
   domain_name = var.domain-name
   stage       = aws_apigatewayv2_stage.stage.id
 }
+
+#-----------------------Cognito--------------------------#
+
