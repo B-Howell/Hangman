@@ -5,11 +5,17 @@ terraform {
       version = ">= 4.0, < 5.0"
     }
   }
+  backend "s3" {
+    bucket  = "bhcrc-tfstate"
+    key     = "hangman.tfstate"
+    region  = "us-east-1"
+    profile = "terraform"
+
+  }
 }
 
 provider "aws" {
   region  = "us-east-1"
-  profile = "terraform"
 }
 
 # Resources created in AWS Console before using this Terraform Configuration: #
@@ -448,9 +454,15 @@ resource "aws_lb_listener" "http_listener" {
   }
 }
 
-#----------------------------------------------------------#
-#----------------Elastic-Container-Service-----------------#
-#----------------------------------------------------------#
+#-----------------Elastic-Container-Service-----------------#
+#- Creates an ECS Cluster for the app to run in aswell as:  #
+#- TASK DEFINITION - Pulls image from ECR Repo, defines the #
+#- compute resources that will be used and exposes the port #
+#- SERVICE - Specifies the amount of tasks to run, Attaches #
+#- the ALB and defines the network to run in. --------------#
+#- AUTO-SCALING - Puts the service in an auto scaling group #
+#- that can expand from 1-4 tasks based on CPU Utilization -#
+#-----------------------------------------------------------#
 
 resource "aws_ecs_cluster" "cluster" {
   name = "Hangman-Cluster"
@@ -492,7 +504,7 @@ resource "aws_ecs_service" "service" {
     enable = true
     rollback = true
   }
-  
+
   network_configuration {
     security_groups = [aws_security_group.ecs-sg.id]
     subnets = [aws_subnet.private_1.id, aws_subnet.private_2.id]
@@ -577,5 +589,5 @@ resource "aws_apigatewayv2_api_mapping" "mapping" {
   stage       = aws_apigatewayv2_stage.stage.id
 }
 
-#-----------------------Cognito--------------------------#
+#-------------------------Cognito---------------------------#
 
