@@ -109,20 +109,20 @@ def play():
                             if char == letter:
                                 game['hidden_word'][i] = letter
                         if '_' not in game['hidden_word']:
-                            session['stats_updated'] = True  # Flag stats for update
-                            session['win_streak'] = session.get('win_streak', 0) + 1  # Increment win streak
+                            session['stats_updated'] = True
+                            session['win_streak'] = session.get('win_streak', 0) + 1
                             return redirect(url_for('win'))
                     elif letter not in game['incorrect_letters'] and letter not in game['hidden_word']:
                         game['incorrect_letters'].append(letter)
                         game['lives'] -= 1
                         if game['lives'] == 0:
-                            session['stats_updated'] = True  # Flag stats for update
-                            session.pop('win_streak', None)  # Reset win streak
+                            session['stats_updated'] = True
+                            session.pop('win_streak', None)
                             return redirect(url_for('lose'))
                     session['game'] = game
             elif 'new_game' in request.form:
                 session.pop('game')
-                session.pop('win_streak', None)  # Reset win streak
+                session.pop('win_streak', None)
                 return redirect(url_for('category'))
         return render_template('play.html', category=session.get('category'), hidden_word=' '.join(game['hidden_word']), lives=game['lives'], incorrect_letters=game['incorrect_letters'])
     return redirect(url_for('category'))
@@ -131,17 +131,14 @@ def update_stats(won):
     conn = get_db_connection()
     if conn:
         cursor = conn.cursor()
-        player_id = 'Player 1'  # Assuming there is only one player
+        player_id = 'Player 1'
         cursor.execute("SELECT * FROM stats WHERE player_id = %s", (player_id,))
         row = cursor.fetchone()
         if row:
             wins = int(row[1]) + 1 if won else int(row[1])
             losses = int(row[2]) + 1 if not won else int(row[2])
-
-            # Update current win streak and longest win streak based on game result
             current_win_streak = session.get('win_streak', 0)
             longest_win_streak = max(int(row[4]), current_win_streak)
-
             cursor.execute("UPDATE stats SET wins = %s, losses = %s, current_win_streak = %s, longest_win_streak = %s WHERE player_id = %s",
                            (wins, losses, current_win_streak, longest_win_streak, player_id))
             conn.commit()
@@ -151,33 +148,29 @@ def get_player_stats():
     conn = get_db_connection()
     if conn:
         cursor = conn.cursor()
-        player_id = 'Player 1'  # Assuming there is only one player
+        player_id = 'Player 1'
         cursor.execute("SELECT * FROM stats WHERE player_id = %s", (player_id,))
         stats = cursor.fetchone()
         conn.close()
         if stats:
             return stats
-    return []  # Return an empty list if no stats are found
+    return []
 
 @app.route('/win')
 def win():
     game = session.get('game')
     if game:
         if 'stats_updated' in session:
-            update_stats(True)  # Update stats for winning game
+            update_stats(True)
             session.pop('stats_updated')
-
         word = game['word']
         lives = game['lives']
-
-        # Fetch updated stats from the database
         stats = get_player_stats()
-
         if stats:
-            wins = stats[1]  # Use the values from the updated stats
+            wins = stats[1]
             losses = stats[2]
             win_loss_ratio = round(wins / losses, 2) if losses > 0 else wins
-            current_win_streak = stats[3] + 1  # Increment the current win streak
+            current_win_streak = stats[3] + 1
             longest_win_streak = max(stats[4], current_win_streak)
         else:
             wins = 1
@@ -191,27 +184,22 @@ def win():
                                longest_win_streak=longest_win_streak, stats=stats)
     return redirect(url_for('category'))
 
-
-
 @app.route('/lose')
 def lose():
     game = session.get('game')
     if game:
         if 'stats_updated' in session:
-            update_stats(False)  # Update stats for losing game
+            update_stats(False)
             session.pop('stats_updated')
 
         word = game['word']
-
-        # Fetch updated stats from the database
         stats = get_player_stats()
-
         if stats:
             wins = stats[1]
-            losses = stats[2] + 1  # Increment the losses
+            losses = stats[2] + 1
             win_loss_ratio = round(wins / losses, 2) if losses > 0 else wins
-            current_win_streak = 0  # Reset win streak for the current game
-            longest_win_streak = max(stats[4], stats[3])  # Use the value from the stats directly
+            current_win_streak = 0
+            longest_win_streak = max(stats[4], stats[3])
         else:
             wins = 0
             losses = 1
