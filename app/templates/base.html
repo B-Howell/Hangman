@@ -22,6 +22,33 @@
             </div>
             
             <div class="right-container">
+
+                {% if stats %}
+                <table>
+                    <tbody>
+                        <tr>
+                            <td>Wins:</td>
+                            <td class="cell-value">{{ stats[0][1] }}</td>
+                        </tr>
+                        <tr>
+                            <td>Losses:</td>
+                            <td class="cell-value">{{ stats[0][2] }}</td>
+                        </tr>
+                        <tr>
+                            <td>W/L Ratio:</td>
+                            <td class="cell-value">{{ stats[0][3] }}</td>
+                        </tr>
+                        <tr>
+                            <td>Current Win Streak:</td>
+                            <td class="cell-value">{{ stats[0][4] }}</td>
+                        </tr>
+                        <tr>
+                            <td>Longest Win Streak:</td>
+                            <td class="cell-value">{{ stats[0][5] }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                {% endif %}
             </div>
 
         </div>
