@@ -12,7 +12,7 @@
   <div class="container">
     
     <div class="header-container">
-      <h1 class="header1">Hangman</h1>    
+      <img class="logo" id="logo" src="{{ url_for('static', filename='img/logo.png') }}">    
       <h2 class="header">{{ category }}</h2>
     </div>
   
@@ -62,10 +62,124 @@
           {% endfor %}
         </form>
 
-        <form action="{{ url_for('category') }}" method="get">
-          <button class="new-game-button" type="submit">NEW GAME</button>
-        </form>
+        <div class="button-container">
+          <button class="new-game-stats-button" id="newGameButton">NEW GAME</button>
+          <button class="new-game-stats-button" id="statsButton">STATS</button>
+        </div>
 
     </div>
+
+    <div id="statsPopup" class="popup">
+      <span class="close-button" id="closeButtonStats">&times;</span>
+      <h3>Your Stats:</h3>
+      {% if stats %}
+      <table>
+          <tbody>
+              <tr>
+                  <td>Wins:</td>
+                  <td class="cell-value">{{ stats[0][1] }}</td>
+              </tr>
+              <tr>
+                  <td>Losses:</td>
+                  <td class="cell-value">{{ stats[0][2] }}</td>
+              </tr>
+              <tr>
+                  <td>W/L Ratio:</td>
+                  <td class="cell-value">{{ stats[0][3] }}</td>
+              </tr>
+              <tr>
+                  <td>Current Win Streak:</td>
+                  <td class="cell-value">{{ stats[0][4] }}</td>
+              </tr>
+              <tr>
+                  <td>Longest Win Streak:</td>
+                  <td class="cell-value">{{ stats[0][5] }}</td>
+              </tr>
+          </tbody>
+      </table>
+      {% else %}
+      <p>No stats available</p>
+      {% endif %}
+    </div>
+    <div id="overlayStats" class="overlay"></div>
+
+    
+    <div id="newGamePopup" class="new-game-popup">
+      <span class="close-button" id="closeButton">&times;</span>
+      <h3>Are you sure?</h3>
+      <p>If you start a new game, your current game will result in a loss.</p>
+      <div class="button-container">
+        <button class="new-game-stats-button2" id="confirmNewGameButton" name="new_game">New Game</button>
+        <button class="new-game-stats-button2" id="cancelNewGameButton">Cancel</button>
+      </div>
+    </div>
+    <div id="overlay" class="overlay"></div>
+
+    
+    <script>
+      var newGameButton = document.getElementById('newGameButton');
+      var newGamePopup = document.getElementById('newGamePopup');
+      var confirmNewGameButton = document.getElementById('confirmNewGameButton');
+      var cancelNewGameButton = document.getElementById('cancelNewGameButton');
+      var closeButton = document.getElementById('closeButton');
+      var overlay = document.getElementById('overlay');
+    
+      newGameButton.addEventListener('click', function() {
+        newGamePopup.classList.add('show');
+        overlay.classList.add('show');
+      });
+    
+      confirmNewGameButton.addEventListener('click', function() {
+        var form = document.createElement('form');
+        form.method = 'POST';
+        form.action = "{{ url_for('play') }}";
+    
+        var input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'new_game';
+        input.value = 'true';
+    
+        form.appendChild(input);
+        document.body.appendChild(form);
+    
+        form.submit();
+      });
+    
+      cancelNewGameButton.addEventListener('click', function() {
+        newGamePopup.classList.remove('show');
+        overlay.classList.remove('show');
+      });
+    
+      closeButton.addEventListener('click', function() {
+        newGamePopup.classList.remove('show');
+        overlay.classList.remove('show');
+      });
+    
+      overlay.addEventListener('click', function() {
+        newGamePopup.classList.remove('show');
+        overlay.classList.remove('show');
+      });
+    
+      var statsButton = document.getElementById('statsButton');
+      var statsPopup = document.getElementById('statsPopup');
+      var overlayStats = document.getElementById('overlayStats');
+    
+      statsButton.addEventListener('click', function() {
+          statsPopup.classList.add('show');
+          overlayStats.classList.add('show');
+      });
+    
+      var closeButtonStats = document.querySelector('#closeButtonStats');
+      closeButtonStats.addEventListener('click', function() {
+          statsPopup.classList.remove('show');
+          overlayStats.classList.remove('show');
+      });
+    
+      overlayStats.addEventListener('click', function() {
+          statsPopup.classList.remove('show');
+          overlayStats.classList.remove('show');
+      });
+    </script>
+
 </body>
 </html>

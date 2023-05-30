@@ -4,14 +4,13 @@
     <meta charset="UTF-8">
     <title>Hangman</title>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
-
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </head>
 <body>
     <div class="container">
         
         <div class="header-container">
-            <h1 class="header1">Hangman</h1>
+            <img class="logo" id="logo" src="{{ url_for('static', filename='img/logo.png') }}">
             <h2 class="header">Welcome!</h2>
         </div>
 
@@ -48,17 +47,73 @@
                         </tr>
                     </tbody>
                 </table>
+                {% else %}
+                <p>No stats available</p>
                 {% endif %}
             </div>
 
         </div>
 
         <div class="start-new-game-container">
-            <form action="/category" method="post">
-                <button class="start-button" type="submit">START GAME</button>
+            <form method="POST" action="{{ url_for('category') }}">
+              <button type="submit" class="start-button">START GAME</button>
             </form>
         </div>
+          
 
     </div>
+<!--
+    <div class="login-popup-overlay">
+        <div class="login-popup">
+            <div class="login-section">
+                <h2>Login</h2>
+                <form class="login-form">
+                    <input type="text" name="username" placeholder="Username">
+                    <input type="password" name="password" placeholder="Password">
+                    <button type="submit">Login</button>
+                    <button class="create-account-button">Create an Account</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="login-popup-overlay login-popup-overlay-register" style="display: none;">
+        <div class="login-popup">
+            <div class="signup-section">
+                <h2>Create an Account</h2>
+                <form class="signup-form">
+                    <input type="text" name="username" placeholder="Username">
+                    <input type="password" name="password" placeholder="Password">
+                    <button type="submit">Register</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // Open first popup: Login
+    document.querySelector('.login-popup-overlay').style.display = 'flex';
+
+    // Handle click on Create an Account button in the Login popup
+    document.querySelector('.create-account-button').addEventListener('click', function() {
+        document.querySelector('.login-popup-overlay').style.display = 'none';
+        document.querySelector('.login-popup-overlay-register').style.display = 'flex';
+    });
+
+    // Submit the login form (dummy behavior, no actual login functionality)
+    document.querySelector('.login-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        alert('Login form submitted!');
+    });
+
+    // Submit the register form (dummy behavior, no actual registration functionality)
+    document.querySelector('.signup-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        alert('Register form submitted!');
+    });
+</script>
+-->
 </body>
 </html>

@@ -1,61 +1,43 @@
 from flask import Flask, render_template, request, redirect, url_for, session
+from flask_mysqldb import MySQL
 from config import Config
 import random
 import hangman_words
-import mysql.connector
 
 app = Flask(__name__)
 app.config.from_object(Config)
-
-def get_db_connection():
-    try:
-        conn = mysql.connector.connect(
-            host=app.config['DB_HOST'],
-            user=app.config['DB_USER'],
-            password=app.config['DB_PASSWORD'],
-            database=app.config['DB_NAME']
-        )
-        return conn
-    except mysql.connector.Error as error:
-        print(f"Error connecting to database: {error}")
-        return None
+mysql = MySQL(app)
 
 @app.route('/', methods=['GET', 'POST'])
 def base():
-    conn = get_db_connection()
-    if conn:
-        try:
-            cursor = conn.cursor()
-            cursor.execute("SELECT * FROM stats")
-            stats = cursor.fetchall()
-        except mysql.connector.Error as error:
-            print(f"Error executing database query: {error}")
-            stats = None
-        finally:
-            cursor.close()
-            conn.close()
-    else:
+    try:
+        conn = mysql.connect
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM stats")
+        stats = cur.fetchall()
+        cur.close()
+    except Exception as e:
+        print(f"Error executing database query: {e}")
         stats = None
+    finally:
+        conn.close()
 
     return render_template('base.html', stats=stats)
 
-
 @app.route('/category', methods=['GET', 'POST'])
 def category():
-    conn = get_db_connection()
-    if conn:
-        try:
-            cursor = conn.cursor()
-            cursor.execute("SELECT * FROM stats")
-            stats = cursor.fetchall()
-        except mysql.connector.Error as error:
-            print(f"Error executing database query: {error}")
-            stats = None
-        finally:
-            cursor.close()
-            conn.close()
-    else:
+    conn = mysql.connect
+    try:
+        conn = mysql.connect
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM stats")
+        stats = cur.fetchall()
+        cur.close()
+    except Exception as e:
+        print(f"Error executing database query: {e}")
         stats = None
+    finally:
+        conn.close()
 
     if request.method == 'POST':
         category = request.form.get('category')
@@ -97,6 +79,19 @@ def get_random_word(category):
 
 @app.route('/play', methods=['GET', 'POST'])
 def play():
+    conn = mysql.connect
+    try:
+        conn = mysql.connect
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM stats")
+        stats = cur.fetchall()
+        cur.close()
+    except Exception as e:
+        print(f"Error executing database query: {e}")
+        stats = None
+    finally:
+        conn.close()
+        
     game = session.get('game')
     if game:
         if request.method == 'POST':
@@ -121,14 +116,15 @@ def play():
                             return redirect(url_for('lose'))
                     session['game'] = game
             elif 'new_game' in request.form:
+                update_stats(won=False)  # Add a loss to the user's record
                 session.pop('game')
                 session.pop('win_streak', None)
                 return redirect(url_for('category'))
-        return render_template('play.html', category=session.get('category'), hidden_word=' '.join(game['hidden_word']), lives=game['lives'], incorrect_letters=game['incorrect_letters'])
+        return render_template('play.html', stats=stats, category=session.get('category'), hidden_word=' '.join(game['hidden_word']), lives=game['lives'], incorrect_letters=game['incorrect_letters'])
     return redirect(url_for('category'))
 
 def update_stats(won):
-    conn = get_db_connection()
+    conn = mysql.connect
     if conn:
         cursor = conn.cursor()
         player_id = 'Player 1'
@@ -137,15 +133,17 @@ def update_stats(won):
         if row:
             wins = int(row[1]) + 1 if won else int(row[1])
             losses = int(row[2]) + 1 if not won else int(row[2])
+            win_loss_ratio = round(wins / losses, 2) if losses > 0 else wins
             current_win_streak = session.get('win_streak', 0)
             longest_win_streak = max(int(row[4]), current_win_streak)
-            cursor.execute("UPDATE stats SET wins = %s, losses = %s, current_win_streak = %s, longest_win_streak = %s WHERE player_id = %s",
-                           (wins, losses, current_win_streak, longest_win_streak, player_id))
+            cursor.execute("UPDATE stats SET wins = %s, losses = %s, win_loss_ratio = %s, current_win_streak = %s, longest_win_streak = %s WHERE player_id = %s",
+                           (wins, losses, win_loss_ratio, current_win_streak, longest_win_streak, player_id))
             conn.commit()
         conn.close()
 
+
 def get_player_stats():
-    conn = get_db_connection()
+    conn = mysql.connect
     if conn:
         cursor = conn.cursor()
         player_id = 'Player 1'
