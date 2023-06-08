@@ -91,7 +91,7 @@ def play():
         stats = None
     finally:
         conn.close()
-        
+
     game = session.get('game')
     if game:
         if request.method == 'POST':
@@ -112,11 +112,13 @@ def play():
                         game['lives'] -= 1
                         if game['lives'] == 0:
                             session['stats_updated'] = True
+                            update_stats(won=False)  # Update the stats before resetting win streak
                             session.pop('win_streak', None)
                             return redirect(url_for('lose'))
                     session['game'] = game
             elif 'new_game' in request.form:
-                update_stats(won=False)  # Add a loss to the user's record
+                if session.get('win_streak', 0) > 0:
+                    update_stats(won=True)  # Update the stats before starting a new game
                 session.pop('game')
                 session.pop('win_streak', None)
                 return redirect(url_for('category'))
@@ -197,7 +199,10 @@ def lose():
             losses = stats[2] + 1
             win_loss_ratio = round(wins / losses, 2) if losses > 0 else wins
             current_win_streak = 0
-            longest_win_streak = max(stats[4], stats[3])
+            longest_win_streak = stats[4]  # Keep the current longest win streak from the database
+
+            if session.get('win_streak', 0) > longest_win_streak:
+                longest_win_streak = session.get('win_streak', 0)  # Update longest win streak if the current win streak is higher
         else:
             wins = 0
             losses = 1
