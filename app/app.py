@@ -127,7 +127,8 @@ def play():
                 return redirect(url_for('category'))
         return render_template('play.html', stats=stats, category=session.get('category'),
                                hidden_word=' '.join(game['hidden_word']), lives=game['lives'],
-                               incorrect_letters=game['incorrect_letters'])
+                               incorrect_letters=game['incorrect_letters'],
+                               correct_letters=[letter for letter in game['hidden_word'] if letter != '_'])
     return redirect(url_for('category'))
 
 def update_stats(won):

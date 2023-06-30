@@ -21,64 +21,45 @@
       <div class="left-container">
         <img class="img-pad" id="hangman-image" src="{{ url_for('static', filename='img/stage0.png') }}">
 
-        <script>
-          window.onload = function() {
-            var lives = {{ lives }};
-              var hangmanImage = document.getElementById("hangman-image");
-            
-              if (lives == 6) {
-                hangmanImage.src = "{{ url_for('static', filename='img/stage0.png') }}";
-              } else if (lives == 5) {
-                hangmanImage.src = "{{ url_for('static', filename='img/stage1.png') }}";
-              } else if (lives == 4) {
-                hangmanImage.src = "{{ url_for('static', filename='img/stage2.png') }}";
-              } else if (lives == 3) {
-                hangmanImage.src = "{{ url_for('static', filename='img/stage3.png') }}";
-              } else if (lives == 2) {
-                hangmanImage.src = "{{ url_for('static', filename='img/stage4.png') }}";
-              } else if (lives == 1) {
-                hangmanImage.src = "{{ url_for('static', filename='img/stage5.png') }}";
-              } else if (lives == 0){
-                hangmanImage.src = "{{ url_for('static', filename='img/stage6.png') }}";
-              } 
-          }
-        </script>
       </div>
+      
       <div class="right-container">
         <h3 class="text-pad">
-          <p id="hidden-word"></p>
+          <p id="hidden-word" class="hangman-answer" style="font-family: monospace; font-size: 1.4em; white-space: normal;"></p>
         </h3>
-        
+
         <script>
-          // Get the hidden word and replace '\u00A0' with spaces
           var hiddenWord = "{{ hidden_word|join('')|replace('\u00A0', ' ') }}";
-        
-          // Split the hidden word by multiple spaces
-          var words = hiddenWord.split(/ {2,}/);
-        
-          // Generate the HTML for displaying the hidden word with line breaks
-          var html = words.join("<br>");
-        
-          // Set the generated HTML as the content of the 'hidden-word' element
+          var words = hiddenWord.split(' ');
+          var maxLineLength = 32;
+          var processedWords = [];
+          var currentLineLength = 0;
+          for (var i = 0; i < words.length; i++) {
+            if (currentLineLength + words[i].length > maxLineLength) {
+              processedWords.push('<br>');
+              currentLineLength = 0;
+            }
+            processedWords.push(words[i]);
+            currentLineLength += words[i].length;
+          }
+          var html = processedWords.join(' ');
           document.getElementById("hidden-word").innerHTML = html;
         </script>
-        
-        
 
-        <h3><p class="guessed-letters">Guessed letters: {{ ' '.join(incorrect_letters) }}</p></h3>
+        <h3><p class="guessed-letters"></p></h3>
       </div>
     </div>
 
     <div class="letter-container">
       
-        <form id="letter-form" method="POST" action="{{ url_for('play') }}">
-          {% for letter in 'ABCDEFGHIJKLM' %}
-            <button class="letter-button" name="letter" value="{{ letter }}">{{ letter }}</button>
-          {% endfor %}<br/>
-          {% for letter in 'NOPQRSTUVWXYZ' %}
-            <button class="letter-button" name="letter" value="{{ letter }}">{{ letter }}</button>
-          {% endfor %}
-        </form>
+      <form id="letter-form" method="POST" action="{{ url_for('play') }}">
+        {% for letter in 'ABCDEFGHIJKLM' %}
+          <button class="letter-button" name="letter" value="{{ letter }}">{{ letter }}</button>
+        {% endfor %}<br/>
+        {% for letter in 'NOPQRSTUVWXYZ' %}
+          <button class="letter-button" name="letter" value="{{ letter }}">{{ letter }}</button>
+        {% endfor %}
+      </form>
 
         <div class="button-container">
           <button class="new-game-stats-button" id="newGameButton">NEW GAME</button>
@@ -135,6 +116,68 @@
 
     
     <script>
+      window.onload = function() {
+        var lives = {{ lives }};
+        var incorrectLetters = "{{ ' '.join(incorrect_letters) }}".split(' ');
+        var correctLetters = "{{ ' '.join(correct_letters) }}".split(' ');
+
+        var hangmanImage = document.getElementById("hangman-image");
+        var hiddenWordElement = document.getElementById("hidden-word");
+
+        // Update the hangman image based on the number of lives
+        var hangmanImages = [
+          "{{ url_for('static', filename='img/stage0.png') }}",
+          "{{ url_for('static', filename='img/stage1.png') }}",
+          "{{ url_for('static', filename='img/stage2.png') }}",
+          "{{ url_for('static', filename='img/stage3.png') }}",
+          "{{ url_for('static', filename='img/stage4.png') }}",
+          "{{ url_for('static', filename='img/stage5.png') }}",
+          "{{ url_for('static', filename='img/stage6.png') }}",
+        ];
+        hangmanImage.src = hangmanImages[6 - lives];
+
+        // Update the hidden word displayed
+        var hiddenWord = "{{ hidden_word|join('')|replace('\u00A0', ' ') }}";
+        var maxLineLength = 32;  // Update this value to match your specific case
+        var words = hiddenWord.split('   '); // Splitting by three spaces.
+        var lines = [];
+        var currentLine = '';
+
+        words.forEach(function(word, index) {
+            var space = index == 0 ? '' : '&nbsp;&nbsp;&nbsp;'; // Adding three non-breaking spaces before the word except the first word.
+            if ((currentLine.length + word.length + space.length) > maxLineLength) {
+                // The word doesn't fit on the current line, so start a new line.
+                lines.push(currentLine);
+                currentLine = word;
+            } else {
+                // The word fits on the current line, so add it.
+                currentLine += space + word;
+            }
+        });
+
+        // Don't forget the last line.
+        if (currentLine.length > 0) {
+            lines.push(currentLine);
+        }
+
+        document.getElementById("hidden-word").innerHTML = lines.join('<br>');
+
+        // Disable the guessed letters
+        var guessedLetters = incorrectLetters.concat(correctLetters);
+        guessedLetters.forEach(function(letter) {
+          var buttons = document.getElementsByName('letter');
+          for (var i = 0; i < buttons.length; i++) {
+            if (buttons[i].value == letter) {
+              buttons[i].disabled = true;
+              buttons[i].classList.add('guessed');  // Add guessed class for styling
+            }
+          }
+        });
+      };
+    </script>
+
+    <script>
+
       var newGameButton = document.getElementById('newGameButton');
       var newGamePopup = document.getElementById('newGamePopup');
       var confirmNewGameButton = document.getElementById('confirmNewGameButton');
@@ -201,3 +244,47 @@
 
 </body>
 </html>
+
+<!--
+  OLD SCRIPT:
+  <script>
+          window.onload = function() {
+            var lives = {{ lives }};
+              var hangmanImage = document.getElementById("hangman-image");
+            
+              if (lives == 6) {
+                hangmanImage.src = "{{ url_for('static', filename='img/stage0.png') }}";
+              } else if (lives == 5) {
+                hangmanImage.src = "{{ url_for('static', filename='img/stage1.png') }}";
+              } else if (lives == 4) {
+                hangmanImage.src = "{{ url_for('static', filename='img/stage2.png') }}";
+              } else if (lives == 3) {
+                hangmanImage.src = "{{ url_for('static', filename='img/stage3.png') }}";
+              } else if (lives == 2) {
+                hangmanImage.src = "{{ url_for('static', filename='img/stage4.png') }}";
+              } else if (lives == 1) {
+                hangmanImage.src = "{{ url_for('static', filename='img/stage5.png') }}";
+              } else if (lives == 0){
+                hangmanImage.src = "{{ url_for('static', filename='img/stage6.png') }}";
+              } 
+          }
+        </script>
+
+        <script>
+          var hiddenWord = "{{ hidden_word|join('')|replace('\u00A0', ' ') }}";
+          var words = hiddenWord.split(' ');
+          var maxLineLength = 32;
+          var processedWords = [];
+          var currentLineLength = 0;
+          for (var i = 0; i < words.length; i++) {
+            if (currentLineLength + words[i].length > maxLineLength) {
+              processedWords.push('<br>');
+              currentLineLength = 0;
+            }
+            processedWords.push(words[i]);
+            currentLineLength += words[i].length;
+          }
+          var html = processedWords.join(' ');
+          document.getElementById("hidden-word").innerHTML = html;
+        </script>
+-->

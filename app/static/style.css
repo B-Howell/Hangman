@@ -57,6 +57,10 @@ h1, h2, h3 {
   padding-right: 1em;
 }
 
+.hangman-answer {
+  white-space: pre-wrap;
+}
+
 .letter-category-container, .start-new-game-container {
   width: 100%;
   height: 25%;
@@ -88,18 +92,38 @@ h1, h2, h3 {
   border-radius: 5px;
   box-shadow: #d1a349 0px 4px 0px 0px;
   padding: 15px;
-  background-repeat: no-repeat;
   box-sizing: border-box;
   width: 156px;
   height: 45px;
   color: #000000;
   border: none;
-  font-size: 19px;
+  font-size: 18px;
   transition: all .3s ease-in-out;
   z-index: 1;
   overflow: hidden;
   cursor: pointer;
   margin-bottom: .4em;
+  display: inline-block;
+  text-align: center; /* Center the text */
+}
+
+.button-icon {
+  width: 30px;
+  height: 30px;
+  position: absolute; /* Absolute position the icon */
+  left: .5em; /* Position the icon at the left with 10px offset */
+  top: 50%; /* Center it vertically */
+  transform: translateY(-50%); /* Correct alignment */
+}
+
+.button-text {
+  display: block; /* Make the text a block element */
+  width: calc(100% - 2.5em); /* Subtract the width and margins of the icon */
+  text-align: center; /* Center the text within its area */
+  position: absolute; /* Absolute position the text */
+  left: 2.4em; /* Position the text to the right of the icon */
+  top: 50%; /* Center it vertically */
+  transform: translateY(-45%); /* Correct alignment */
 }
 
 .category-button::before {
@@ -156,24 +180,25 @@ h1, h2, h3 {
   }
 
 .letter-button {
-  position: center;
-  background-color: rgb(255, 212, 133);
-  border-radius: 5px;
-  box-shadow: #d1a349 0px 4px 0px 0px;
-  padding: 15px;
-  background-repeat: no-repeat;
-  box-sizing: border-box;
-  width: 45px;
-  height: 45px;
-  color: #000000;
-  border: none;
-  font-size: 20px;
-  transition: all .3s ease-in-out;
-  z-index: 1;
-  overflow: hidden;
-  cursor: pointer;
-  margin-bottom: .4em;
-}
+    position: relative;
+    background-color: rgb(255, 212, 133);
+    border-radius: 5px;
+    box-shadow: #d1a349 0px 4px 0px 0px;
+    padding: 15px;
+    background-repeat: no-repeat;
+    box-sizing: border-box;
+    width: 45px;
+    height: 45px;
+    color: #000000;
+    border: none;
+    font-size: 20px;
+    transition: all .3s ease-in-out;
+    z-index: 1;
+    overflow: hidden;
+    cursor: pointer;
+    margin-bottom: .4em;
+  }
+  
 
 .letter-button::before {
   content: "";
@@ -191,7 +216,6 @@ h1, h2, h3 {
 .letter-button:hover::before {
   width: 100%;
 }
-
 
 .letter-button:disabled {
     opacity: 0.5; /* reduces opacity of element */

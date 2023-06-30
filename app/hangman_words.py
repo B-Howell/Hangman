@@ -154,7 +154,6 @@ professions = [
     'PHOTOGRAPHER',
     'ARCHITECT',
     'LAWYER',
-    'PHYSIOTHERAPIST',
     'ACCOUNTANT',
     'SOCIAL WORKER',
     'CHEMIST'
@@ -262,9 +261,34 @@ cities = [
 ]
 
 movies = [
-
+    'AVATAR',
+    'TITANIC',
+    'STAR WARS',
+    'JURASSIC PARK',
+    'THE LORD OF THE RINGS',
+    'INCEPTION',
+    'THE MATRIX',
+    'HARRY POTTER',
+    'THE GODFATHER',
+    'FROZEN',
+    'THE DARK KNIGHT',
+    'THE AVENGERS',
+    'FORREST GUMP',
     'THE SHAWSHANK REDEMPTION',
-
+    'THE LION KING',
+    'PULP FICTION',
+    'GLADIATOR',
+    'THE DEPARTED',
+    'INTERSTELLAR',
+    'BACK TO THE FUTURE',
+    'GOODFELLAS',
+    'CASINO',
+    'THE SILENCE OF THE LAMBS',
+    'FIGHT CLUB',
+    'THE WIZARD OF OZ',
+    'PIRATES OF THE CARIBBEAN',
+    'THE TERMINATOR',
+    'THE NOTEBOOK'
 ]
 
 books = [
@@ -349,7 +373,7 @@ alcohol = [
     'LAGER',
     'STOUT',
     'INDIA PALE ALE',
-    'PILSNER'
+    'PILSNER',
     'PORTER'
 ]
 
