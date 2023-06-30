@@ -1,0 +1,207 @@
+html, body {
+  background: #181818; 
+  font-family: 'Lato', helvetica, arial, sans-serif; 
+  font-size: 16px; color: #222;
+  
+
+}
+
+
+body {
+    width: 90%;
+    max-width: 730px;
+    min-height: 110vh;
+    background: #f3f3f3;
+    margin: 30px auto;
+    padding: 25px 35px;
+    border-bottom: 2px solid #cf8a05;
+}
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+}
+
+.header-container h1 {
+  margin: 0;
+}
+
+.header-container h2 {
+  margin: 0;
+  font-size: 1.2em;
+  color: #cf8a05;
+  font-family: 'Lato', helvetica, arial, sans-serif;
+}
+
+.header-container > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.header-container > div > * {
+  margin-bottom: 5px;
+}
+
+.header-container button {
+  margin-left: auto;
+  font-size: 1em;
+  border: 1px solid #cf8a05;
+  border-radius: 4px;
+  padding: 6px 12px;
+  background-color: rgb(255, 212, 133);
+  font-family: 'Lato', helvetica, arial, sans-serif;
+  cursor: pointer;
+}
+
+.bold {
+  font-weight: bold;
+}
+
+  
+h2 {
+    color: #cf8a05;
+}
+
+iframe {
+    display: block; /* Make the iframe a block-level element */
+    margin: 0 auto; /* Center the iframe horizontally */
+  }
+
+.padding-1 {
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+.container p {
+  margin-bottom: 1em; /* add a bottom margin to each paragraph */
+}
+
+
+@media print {
+  #cv {
+      width: 100%;
+  }
+}
+
+@-webkit-keyframes reset {
+0% {
+  opacity: 0;
+}
+100% {
+  opacity: 0;
+}
+}
+
+@-webkit-keyframes fade-in {
+0% {
+  opacity: 0;
+}
+40% {
+  opacity: 0;
+}
+100% {
+  opacity: 1;
+}
+}
+
+@-moz-keyframes reset {
+0% {
+  opacity: 0;
+}
+100% {
+  opacity: 0;
+}
+}
+
+@-moz-keyframes fade-in {
+0% {
+  opacity: 0;
+}
+40% {
+  opacity: 0;
+}
+100% {
+  opacity: 1;
+}
+}
+
+@keyframes reset {
+0% {
+  opacity: 0;
+}
+100% {
+  opacity: 0;
+}
+}
+
+@keyframes fade-in {
+0% {
+  opacity: 0;
+}
+40% {
+  opacity: 0;
+}
+100% {
+  opacity: 1;
+}
+}
+
+.instaFade {
+  -webkit-animation-name: reset, fade-in;
+  -webkit-animation-duration: 1.5s;
+  -webkit-animation-timing-function: ease-in;
+
+-moz-animation-name: reset, fade-in;
+  -moz-animation-duration: 1.5s;
+  -moz-animation-timing-function: ease-in;
+
+animation-name: reset, fade-in;
+  animation-duration: 1.5s;
+  animation-timing-function: ease-in;
+}
+
+.quickFade {
+  -webkit-animation-name: reset, fade-in;
+  -webkit-animation-duration: 2.5s;
+  -webkit-animation-timing-function: ease-in;
+
+-moz-animation-name: reset, fade-in;
+  -moz-animation-duration: 2.5s;
+  -moz-animation-timing-function: ease-in;
+
+animation-name: reset, fade-in;
+  animation-duration: 2.5s;
+  animation-timing-function: ease-in;
+}
+
+.delayOne {
+-webkit-animation-delay: 0, .5s;
+-moz-animation-delay: 0, .5s;
+animation-delay: 0, .5s;
+}
+
+.delayTwo {
+-webkit-animation-delay: 0, 1s;
+-moz-animation-delay: 0, 1s;
+animation-delay: 0, 1s;
+}
+
+.delayThree {
+-webkit-animation-delay: 0, 1.5s;
+-moz-animation-delay: 0, 1.5s;
+animation-delay: 0, 1.5s;
+}
+
+.delayFour {
+-webkit-animation-delay: 0, 2s;
+-moz-animation-delay: 0, 2s;
+animation-delay: 0, 2s;
+}
+
+.delayFive {
+-webkit-animation-delay: 0, 2.5s;
+-moz-animation-delay: 0, 2.5s;
+animation-delay: 0, 2.5s;
+}

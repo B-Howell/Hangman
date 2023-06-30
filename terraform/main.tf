@@ -2,7 +2,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = ">= 4.0, < 5.0"
+      version = "~> 4.0"
     }
   }
   backend "s3" {
@@ -16,6 +16,7 @@ terraform {
 
 provider "aws" {
   region  = "us-east-1"
+  profile = "terraform"
 }
 
 # Resources created in AWS Console before using this Terraform Configuration: #
