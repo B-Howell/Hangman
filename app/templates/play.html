@@ -45,7 +45,25 @@
         </script>
       </div>
       <div class="right-container">
-        <h3 class="text-pad"><p>{{ hidden_word }}</p></h3>
+        <h3 class="text-pad">
+          <p id="hidden-word"></p>
+        </h3>
+        
+        <script>
+          // Get the hidden word and replace '\u00A0' with spaces
+          var hiddenWord = "{{ hidden_word|join('')|replace('\u00A0', ' ') }}";
+        
+          // Split the hidden word by multiple spaces
+          var words = hiddenWord.split(/ {2,}/);
+        
+          // Generate the HTML for displaying the hidden word with line breaks
+          var html = words.join("<br>");
+        
+          // Set the generated HTML as the content of the 'hidden-word' element
+          document.getElementById("hidden-word").innerHTML = html;
+        </script>
+        
+        
 
         <h3><p class="guessed-letters">Guessed letters: {{ ' '.join(incorrect_letters) }}</p></h3>
       </div>
