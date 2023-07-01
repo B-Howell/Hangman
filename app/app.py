@@ -1,5 +1,6 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, flash
 from flask_mysqldb import MySQL
+from werkzeug.security import generate_password_hash, check_password_hash
 from config import Config
 import random
 import hangman_words
@@ -8,8 +9,56 @@ app = Flask(__name__)
 app.config.from_object(Config)
 mysql = MySQL(app)
 
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+
+        hashed_password = generate_password_hash(password)
+        conn = mysql.connect
+        cur = conn.cursor()
+        cur.execute("INSERT INTO user (username, password) VALUES (%s, %s)", (username, hashed_password))
+        conn.commit()
+
+        cur.close()
+        conn.close()
+
+        return redirect(url_for('base'))
+
+    return render_template('register.html')  # You need to create this template
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+
+        conn = mysql.connect
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM user WHERE username = %s", (username,))
+        user = cur.fetchone()
+
+        cur.close()
+        conn.close()
+
+        if user and check_password_hash(user[3], password):  # user[3] is password field
+            session['user_id'] = user[0]  # user[0] is id field
+            return redirect(url_for('base'))
+
+        flash('Invalid username or password')
+
+    return render_template('login.html')  # You need to create this template
+
 @app.route('/', methods=['GET', 'POST'])
 def base():
+    if 'user_id' in session:
+        # you will need to create a function to fetch the username based on the user_id from the session
+        # username = get_username_from_db(session['user_id'])
+        username = 'Logged in user'  # replace this with the actual username
+    else:
+        username = 'Guest'
+
     try:
         conn = mysql.connect
         cur = conn.cursor()
@@ -22,7 +71,7 @@ def base():
     finally:
         conn.close()
 
-    return render_template('base.html', stats=stats)
+    return render_template('base.html', stats=stats, name=username)  # now base.html receives a name to display
 
 @app.route('/category', methods=['GET', 'POST'])
 def category():

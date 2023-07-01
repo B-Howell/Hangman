@@ -8,6 +8,7 @@
 </head>
 <body>
     <div class="container">
+        {% block content %}
         
         <div class="header-container">
             <img class="logo" id="logo" src="{{ url_for('static', filename='img/logo.png') }}">
@@ -60,7 +61,7 @@
             </form>
         </div>
           
-
+        {% endblock %}
     </div>
 <!--
     <div class="login-popup-overlay">
