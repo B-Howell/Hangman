@@ -9,10 +9,75 @@
   <body>
     <div class="container">
 
-        <div class="header-container">
-          <img class="logo" id="logo" src="{{ url_for('static', filename='img/logo.png') }}">
-            <h2 class="header">You Win!</h2>
+          <div class="header-container">
+            <div class="logo-text">
+                <img class="logo" id="logo" src="{{ url_for('static', filename='img/logo.png') }}">
+                <h2 class="header">You Win!</h2>
+            </div>
+            {% if logged_in %}
+                <div class="logout">
+                    <a id="openLogoutModal" class="logout-button">
+                        <img class="button-icon" src="/static/img/logout.png" />
+                    </a>
+                </div>
+            {% endif %}
+          </div>
+
+          <div id="logoutModal" class="login-popup-overlay">
+            <div class="login-popup">
+                <div class="logout-section">
+                    <span class="close">&times;</span>
+                    <h2>Logout</h2>
+                    <p>Are you sure you want to log out?</p>
+                    <div class="button-container2">
+                        <button class="confirm-logout">Yes, Logout</button>
+                        <button class="cancel-logout">Cancel</button>
+                    </div>
+                </div>
+            </div>
         </div>
+
+        <script>
+          window.addEventListener('load', function() {
+              // Get the modal
+              var modal = document.getElementById("logoutModal");
+      
+              // Get the button that opens the modal
+              var btn = document.getElementById("openLogoutModal");
+      
+              // Get the <span> element that closes the modal
+              var span = document.getElementsByClassName("close")[0];
+      
+              // Get the cancel button
+              var cancelBtn = document.getElementsByClassName("cancel-logout")[0];
+      
+              // When the user clicks the button, open the modal 
+              btn.onclick = function() {
+                  modal.style.display = "flex";
+              }
+      
+              // When the user clicks on <span> (x), close the modal
+              span.onclick = function() {
+                  modal.style.display = "none";
+              }
+      
+              // When the user clicks on cancel button, close the modal
+              cancelBtn.onclick = function() {
+                  modal.style.display = "none";
+              }
+      
+              // When the user clicks anywhere outside of the modal, close it
+              window.onclick = function(event) {
+                  if (event.target == modal) {
+                      modal.style.display = "none";
+                  }
+              }
+      
+              document.querySelector('.confirm-logout').addEventListener('click', function() {
+                  window.location.href = "{{ url_for('logout') }}";
+              });
+          })
+      </script>
 
         <div class="left-right-container">
         
@@ -73,6 +138,8 @@
                       </tr>
                     </tbody>
                   </table>
+                {% else %}
+                  <p>No stats available</p>
                 {% endif %}
                 
             </div>

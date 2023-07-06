@@ -4,88 +4,90 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from config import Config
 import random
 import hangman_words
+import MySQLdb.cursors
 
 app = Flask(__name__)
 app.config.from_object(Config)
 mysql = MySQL(app)
 
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-
-        hashed_password = generate_password_hash(password)
-        conn = mysql.connect
-        cur = conn.cursor()
-        cur.execute("INSERT INTO user (username, password) VALUES (%s, %s)", (username, hashed_password))
-        conn.commit()
-
-        cur.close()
-        conn.close()
-
-        return redirect(url_for('base'))
-
-    return render_template('register.html')  # You need to create this template
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-
-        conn = mysql.connect
-        cur = conn.cursor()
-        cur.execute("SELECT * FROM user WHERE username = %s", (username,))
-        user = cur.fetchone()
-
-        cur.close()
-        conn.close()
-
-        if user and check_password_hash(user[3], password):  # user[3] is password field
-            session['user_id'] = user[0]  # user[0] is id field
-            return redirect(url_for('base'))
-
-        flash('Invalid username or password')
-
-    return render_template('login.html')  # You need to create this template
+class User:
+    def __init__(self, id, username, password):
+        self.id = id
+        self.username = username
+        self.password = password
 
 @app.route('/', methods=['GET', 'POST'])
 def base():
-    if 'user_id' in session:
-        # you will need to create a function to fetch the username based on the user_id from the session
-        # username = get_username_from_db(session['user_id'])
-        username = 'Logged in user'  # replace this with the actual username
-    else:
-        username = 'Guest'
-
-    try:
+    if request.method == 'POST':
         conn = mysql.connect
-        cur = conn.cursor()
-        cur.execute("SELECT * FROM stats")
-        stats = cur.fetchall()
+        cur = conn.cursor(MySQLdb.cursors.DictCursor)
+
+        if 'login' in request.form:
+            username = request.form.get('username')
+            password = request.form.get('password')
+
+            cur.execute("SELECT * FROM users WHERE username = %s", (username,))
+            user = cur.fetchone()
+
+            if user and check_password_hash(user['password'], password):
+                session['user_id'] = user['user_id']
+                session['username'] = username 
+            else:
+                print("Login failed")
+
+        elif 'register' in request.form:
+            username = request.form.get('new_username')
+            cur.execute("SELECT * FROM users WHERE username = %s", (username,))
+            existing_user = cur.fetchone()
+
+            if existing_user:
+                print('User already exists')
+                flash('Username already taken. Please choose another.', 'error')
+            else:
+                password = generate_password_hash(request.form.get('new_password'))
+                cur.execute("INSERT INTO users (user_id, username, password, provider) VALUES (%s, %s, %s, %s)", (None, username, password, 'manual'))
+                conn.commit()
+                user_id = cur.lastrowid
+                cur.execute("INSERT INTO stats (user_id, wins, losses, win_loss_ratio, current_win_streak, longest_win_streak) VALUES (%s, 0, 0, 0.0, 0, 0)", (user_id,))
+                conn.commit()
+                session['user_id'] = user_id
+
+
         cur.close()
-    except Exception as e:
-        print(f"Error executing database query: {e}")
-        stats = None
-    finally:
+
+    stats = None
+    if 'user_id' in session:
+        conn = mysql.connect
+        cur = conn.cursor(MySQLdb.cursors.DictCursor)   # Use a dictionary cursor
+        cur.execute("SELECT * FROM stats WHERE user_id = %s", (session['user_id'],))
+        stats = cur.fetchone()
+        cur.close()
         conn.close()
 
-    return render_template('base.html', stats=stats, name=username)  # now base.html receives a name to display
+
+        return render_template('base.html', logged_in=True, stats=stats, username=session.get('username', ''))
+    else:
+        return render_template('base.html', logged_in=False, stats=stats, username=session.get('username', ''))
+    
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('base'))
 
 @app.route('/category', methods=['GET', 'POST'])
 def category():
     conn = mysql.connect
     try:
-        conn = mysql.connect
         cur = conn.cursor()
-        cur.execute("SELECT * FROM stats")
-        stats = cur.fetchall()
-        cur.close()
+        print(f"Fetching stats for user id {session.get('user_id')}")
+        cur.execute("SELECT * FROM stats WHERE user_id = %s", (session.get('user_id'),))
+        stats = cur.fetchone()
+        print(f"Fetched stats: {stats}")
     except Exception as e:
         print(f"Error executing database query: {e}")
         stats = None
     finally:
+        cur.close()
         conn.close()
 
     if request.method == 'POST':
@@ -95,7 +97,7 @@ def category():
             session['game'] = initialize_game(word)
             session['category'] = category
             return redirect(url_for('play'))
-    return render_template('category.html', stats=stats)
+    return render_template('category.html', stats=stats, logged_in='user_id' in session, username=session.get('username', ''))
 
 def initialize_game(word):
     hidden_word = ['_' if c != ' ' else '\u00A0' for c in word]
@@ -136,18 +138,21 @@ def get_random_word(category):
 
 @app.route('/play', methods=['GET', 'POST'])
 def play():
-    conn = mysql.connect
-    try:
+    if 'user_id' in session:
         conn = mysql.connect
-        cur = conn.cursor()
-        cur.execute("SELECT * FROM stats")
-        stats = cur.fetchall()
-        cur.close()
-    except Exception as e:
-        print(f"Error executing database query: {e}")
-        stats = None
-    finally:
-        conn.close()
+        try:
+            conn = mysql.connect
+            cur = conn.cursor()
+            cur.execute("SELECT * FROM stats WHERE user_id = %s", (session['user_id'],))
+            stats = cur.fetchone()
+            cur.close()
+        except Exception as e:
+            print(f"Error executing database query: {e}")
+            stats = None
+        finally:
+            conn.close()
+    else:
+        return redirect(url_for('base'))
 
     game = session.get('game')
     if game:
@@ -175,18 +180,19 @@ def play():
                 session.pop('game')
                 return redirect(url_for('category'))
         return render_template('play.html', stats=stats, category=session.get('category'),
-                               hidden_word=' '.join(game['hidden_word']), lives=game['lives'],
-                               incorrect_letters=game['incorrect_letters'],
-                               correct_letters=[letter for letter in game['hidden_word'] if letter != '_'])
+                           hidden_word=' '.join(game['hidden_word']), lives=game['lives'],
+                           incorrect_letters=game['incorrect_letters'],
+                           correct_letters=[letter for letter in game['hidden_word'] if letter != '_'],
+                           logged_in='user_id' in session, username=session.get('username', ''))
     return redirect(url_for('category'))
 
 def update_stats(won):
-    conn = mysql.connect
-    if conn:
-        cursor = conn.cursor()
-        player_id = 'Player 1'
-        cursor.execute("SELECT * FROM stats WHERE player_id = %s", (player_id,))
-        row = cursor.fetchone()
+    if 'user_id' in session:
+        conn = mysql.connect
+        if conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM stats WHERE user_id = %s", (session['user_id'],))
+            row = cursor.fetchone()
         if row:
             wins = row[1] + 1 if won else row[1]
             losses = row[2] + 1 if not won else row[2]
@@ -195,23 +201,23 @@ def update_stats(won):
             longest_win_streak = max(row[5], current_win_streak)
 
             cursor.execute(
-                "UPDATE stats SET wins = %s, losses = %s, win_loss_ratio = %s, current_win_streak = %s, longest_win_streak = %s WHERE player_id = %s",
-                (wins, losses, win_loss_ratio, current_win_streak, longest_win_streak, player_id))
+                "UPDATE stats SET wins = %s, losses = %s, win_loss_ratio = %s, current_win_streak = %s, longest_win_streak = %s WHERE user_id = %s",
+                (wins, losses, win_loss_ratio, current_win_streak, longest_win_streak, session['user_id']))
             conn.commit()
 
         cursor.close()
         conn.close()
 
 def get_player_stats():
-    conn = mysql.connect
-    if conn:
-        cursor = conn.cursor()
-        player_id = 'Player 1'
-        cursor.execute("SELECT * FROM stats WHERE player_id = %s", (player_id,))
-        stats = cursor.fetchone()
-        conn.close()
-        if stats:
-            return stats
+    if 'user_id' in session:
+        conn = mysql.connect
+        if conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM stats WHERE user_id = %s", (session['user_id'],))
+            stats = cursor.fetchone()
+            conn.close()
+            if stats:
+                return stats
     return []
 
 @app.route('/win')
@@ -224,7 +230,7 @@ def win():
         word = game['word']
         lives = game['lives']
         stats = get_player_stats()
-        return render_template('win.html', word=word, lives=lives, stats=stats)
+        return render_template('win.html', word=word, lives=lives, stats=stats, logged_in='user_id' in session, username=session.get('username', ''))
     return redirect(url_for('category'))
 
 @app.route('/lose')
@@ -237,7 +243,7 @@ def lose():
 
         word = game['word']
         stats = get_player_stats()
-        return render_template('lose.html', word=word, stats=stats)
+        return render_template('lose.html', word=word, stats=stats, logged_in='user_id' in session, username=session.get('username', ''))
     return redirect(url_for('category'))
 
 if __name__ == '__main__':

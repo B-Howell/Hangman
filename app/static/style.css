@@ -12,6 +12,7 @@ h1, h2, h3 {
   margin-top: 0.1em;
   margin-bottom: 0.1em;
 }
+/*----------------------CONTAINER CODE----------------------*/
 
 .container {
   width: 650px;
@@ -24,12 +25,11 @@ h1, h2, h3 {
 }
 
 .header-container {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  height: 15%;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  justify-items: center;
   align-items: center;
+  width: 100%;
 }
 
 .left-right-container {
@@ -57,8 +57,16 @@ h1, h2, h3 {
   padding-right: 1em;
 }
 
-.hangman-answer {
-  white-space: pre-wrap;
+.button-container {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.button-container2 {
+  display: flex;
+  justify-content: start;
+  margin-bottom: 10px;
 }
 
 .letter-category-container, .start-new-game-container {
@@ -69,79 +77,9 @@ h1, h2, h3 {
   align-items: center;
 }
 
-.img-pad {
-  padding-left: 2em;
-  scale: 1.5;
-}
+/*---------------------------BUTTONS-----------------------------*/
 
-.text-pad {
-  padding-left: 1em;
-  text-align: center;
-}
-
-
-
-.header {
-  text-align: center;
-  display: block;
-}
-
-.category-button {
-  position: relative;
-  background-color: rgb(255, 212, 133);
-  border-radius: 5px;
-  box-shadow: #d1a349 0px 4px 0px 0px;
-  padding: 15px;
-  box-sizing: border-box;
-  width: 156px;
-  height: 45px;
-  color: #000000;
-  border: none;
-  font-size: 18px;
-  transition: all .3s ease-in-out;
-  z-index: 1;
-  overflow: hidden;
-  cursor: pointer;
-  margin-bottom: .4em;
-  display: inline-block;
-  text-align: center; /* Center the text */
-}
-
-.button-icon {
-  width: 30px;
-  height: 30px;
-  position: absolute; /* Absolute position the icon */
-  left: .5em; /* Position the icon at the left with 10px offset */
-  top: 50%; /* Center it vertically */
-  transform: translateY(-50%); /* Correct alignment */
-}
-
-.button-text {
-  display: block; /* Make the text a block element */
-  width: calc(100% - 2.5em); /* Subtract the width and margins of the icon */
-  text-align: center; /* Center the text within its area */
-  position: absolute; /* Absolute position the text */
-  left: 2.4em; /* Position the text to the right of the icon */
-  top: 50%; /* Center it vertically */
-  transform: translateY(-45%); /* Correct alignment */
-}
-
-.category-button::before {
-  content: "";
-  background-color: #f9c254;
-  width: 0;
-  height: 100%;
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: -1;
-  transition: width 700ms ease-in-out;
-  display: inline-block;
-}
-
-.category-button:hover::before {
-  width: 100%;
-}
+/*------START-BUTTON-----*/
 
 .start-button {
   position: relative;
@@ -161,7 +99,6 @@ h1, h2, h3 {
   overflow: hidden;
   cursor: pointer;
   }
-
 .start-button::before {
     content: "";
     background-color: #f9c254;
@@ -174,33 +111,36 @@ h1, h2, h3 {
     transition: width 700ms ease-in-out;
     display: inline-block;
   }
-  
 .start-button:hover::before {
     width: 100%;
   }
 
-.letter-button {
-    position: relative;
-    background-color: rgb(255, 212, 133);
-    border-radius: 5px;
-    box-shadow: #d1a349 0px 4px 0px 0px;
-    padding: 15px;
-    background-repeat: no-repeat;
-    box-sizing: border-box;
-    width: 45px;
-    height: 45px;
-    color: #000000;
-    border: none;
-    font-size: 20px;
-    transition: all .3s ease-in-out;
-    z-index: 1;
-    overflow: hidden;
-    cursor: pointer;
-    margin-bottom: .4em;
-  }
-  
+/*------LOGIN-&-REGISTER-BUTTONS-----*/
 
-.letter-button::before {
+.login-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  background-color: rgb(255, 212, 133);
+  border-radius: 5px;
+  box-shadow: #d1a349 0px 4px 0px 0px;
+  padding: 15px;
+  background-repeat: no-repeat;
+  box-sizing: border-box;
+  width: 160px;
+  height: 40px;
+  color: #000000;
+  border: none;
+  font-size: 20px;
+  transition: all .3s ease-in-out;
+  z-index: 1;
+  overflow: hidden;
+  cursor: pointer;
+  margin-right: .4em;
+}
+
+.login-button::before {
   content: "";
   background-color: #f9c254;
   width: 0;
@@ -213,16 +153,165 @@ h1, h2, h3 {
   display: inline-block;
 }
 
-.letter-button:hover::before {
+.login-button:hover::before {
   width: 100%;
 }
 
+.register-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  background-color: rgb(255, 212, 133);
+  border-radius: 5px;
+  box-shadow: #d1a349 0px 4px 0px 0px;
+  padding: 15px;
+  background-repeat: no-repeat;
+  box-sizing: border-box;
+  width: 160px;
+  height: 40px;
+  color: #000000;
+  border: none;
+  font-size: 20px;
+  transition: all .3s ease-in-out;
+  z-index: 1;
+  overflow: hidden;
+  cursor: pointer;
+  margin-right: .4em;
+  margin-top: 1em;
+}
+
+.register-button::before {
+  content: "";
+  background-color: #f9c254;
+  width: 0;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  transition: width 700ms ease-in-out;
+  display: inline-block;
+}
+
+.register-button:hover::before {
+  width: 100%;
+}
+
+/*-----CONFIRM-CANCEL-LOGOUT BUTTONS-----*/
+
+.confirm-logout,
+.cancel-logout {
+    margin-right: 10px;
+    cursor: pointer;
+    background-color: rgb(255, 212, 133);
+}
+
+/*-----CATEGORY BUTTONS-----*/
+
+.category-button {
+  position: relative;
+  background-color: rgb(255, 212, 133);
+  border-radius: 5px;
+  box-shadow: #d1a349 0px 4px 0px 0px;
+  padding: 15px;
+  box-sizing: border-box;
+  width: 156px;
+  height: 45px;
+  color: #000000;
+  border: none;
+  font-size: 18px;
+  transition: all .3s ease-in-out;
+  z-index: 1;
+  overflow: hidden;
+  cursor: pointer;
+  margin-bottom: .4em;
+  display: inline-block;
+  text-align: center;
+}
+.category-button::before {
+  content: "";
+  background-color: #f9c254;
+  width: 0;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  transition: width 700ms ease-in-out;
+  display: inline-block;
+}
+
+.category-button:hover::before {
+  width: 100%;
+}
+
+.button-icon {
+  width: 30px;
+  height: 30px;
+  position: absolute; 
+  left: .5em; 
+  top: 50%; 
+  transform: translateY(-50%); 
+}
+
+.button-text {
+  display: block; 
+  width: calc(100% - 2.5em); 
+  text-align: center; 
+  position: absolute; 
+  left: 2.4em; 
+  top: 50%;
+  transform: translateY(-45%); 
+}
+
+/*-----LETTER-BUTTONS-------*/
+
+.letter-button {
+  position: relative;
+  background-color: rgb(255, 212, 133);
+  border-radius: 5px;
+  box-shadow: #d1a349 0px 4px 0px 0px;
+  padding: 15px;
+  background-repeat: no-repeat;
+  box-sizing: border-box;
+  width: 45px;
+  height: 45px;
+  color: #000000;
+  border: none;
+  font-size: 20px;
+  transition: all .3s ease-in-out;
+  z-index: 1;
+  overflow: hidden;
+  cursor: pointer;
+  margin-bottom: .4em;
+}
+
+.letter-button::before {
+content: "";
+background-color: #f9c254;
+width: 0;
+height: 100%;
+position: absolute;
+top: 0;
+left: 0;
+z-index: -1;
+transition: width 700ms ease-in-out;
+display: inline-block;
+}
+
+.letter-button:hover::before {
+width: 100%;
+}
+
 .letter-button:disabled {
-    opacity: 0.5; /* reduces opacity of element */
-    cursor: not-allowed; /* changes cursor to not-allowed */
-    pointer-events: none; /* disables pointer events, preventing further clicks */
-    background-color: rgb(147, 147, 147);
-  }
+  opacity: 0.5; /* reduces opacity of element */
+  cursor: not-allowed; /* changes cursor to not-allowed */
+  pointer-events: none; /* disables pointer events, preventing further clicks */
+  background-color: rgb(147, 147, 147);
+}
+
+/*-----NEW-GAME-&-STATS-BUTTON-----*/
 
 .new-game-stats-button {
   position: relative;
@@ -298,15 +387,42 @@ h1, h2, h3 {
   width: 100%;
 }
 
-  .button-container {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
-  }
+/*----HEADER-CONTAINER------*/
+.header {
+  text-align: center;
+  display: block;
+}
 
-.guessed-letters {
-    text-align: left;
-    padding-left: 30px;
+.logo-text {
+  grid-column: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.logout {
+  justify-self: end;
+  padding-right: 10px;
+  padding-top: 0;
+}
+
+/*-----LEFT-CONTAINER-----*/
+
+.img-pad {
+  padding-left: 2em;
+  scale: 1.5;
+}
+
+/*-----RIGHT-CONTAINER-----*/
+
+.hangman-answer {
+  white-space: pre-wrap;
+}
+
+.text-pad {
+  padding-left: 1em;
+  text-align: center;
 }
 
 .cell-value {
@@ -314,10 +430,12 @@ h1, h2, h3 {
   font-weight: bold;
 }
 
-.login-popup-overlay {
-  display: flex;
-  justify-content: center;
+/*-----------------------------POPUPS-----------------------*/
+.login-popup-overlay,
+.login-popup-overlay-register {
+  display: none;
   align-items: center;
+  justify-content: center;
   position: fixed;
   top: 0;
   left: 0;
@@ -329,33 +447,50 @@ h1, h2, h3 {
 
 .login-popup {
   display: flex;
+  justify-self: center;
   flex-direction: column;
   width: 400px;
   background-color: #fefefe;
   border-radius: 5px;
   padding: 20px;
+  position: relative;
 }
 
 .login-section h2,
-.signup-section h2 {
+.register-section h2,
+.logout-section h2 {
   margin-top: 0;
 }
 
 .login-section input[type="text"],
 .login-section input[type="password"],
-.signup-section input[type="text"],
-.signup-section input[type="password"] {
+.register-section input[type="text"],
+.register-section input[type="password"] {
   width: 90%;
   padding: 10px;
   margin-bottom: 10px;
 }
 
 .login-section button,
-.signup-section button {
+.register-section button,
+.logout-section button {
   padding: 10px 20px;
   background-color: rgb(255, 212, 133);
   border: 1px solid #cf8a05;
   cursor: pointer;
+}
+
+.stats-popup {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgb(255, 212, 133);
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 9999;
 }
 
 .new-game-popup {
@@ -390,21 +525,24 @@ h1, h2, h3 {
   display: block;
 }
 
-.popup {
+.popup{
   display: none;
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background-color: rgb(253, 217, 151);
-  padding: 20px;
-  border-radius: 4px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-  z-index: 9999;
+  width: 80%;
+  max-width: 600px;
+  padding: 50px;
+  background: white;
+  box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.1);
+  z-index: 10;
 }
+
 .popup h3 {
   text-align: center;
 }
+
 .overlay {
   display: none;
   position: fixed;
@@ -415,6 +553,7 @@ h1, h2, h3 {
   background-color: rgba(0, 0, 0, 0.6);
   z-index: 9998;
 }
+
 .show {
   display: block;
 }
@@ -423,10 +562,123 @@ h1, h2, h3 {
   position: absolute;
   top: 10px;
   right: 10px;
-  font-size: 18px;
+  font-size: 2em;
+  font-weight: bold;
+  color: #000;
   cursor: pointer;
+}
+
+/* The Modal (background) */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content */
+.modal-content {
+  background-color: #fefefe;
+  margin: 15% auto; /* 15% from the top and centered */
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%; /* Could be more or less, depending on screen size */
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+
+.close {
+  color: #aaaaaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: #000;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.logout-button {
+  position: relative;
+  background-color: rgb(255, 212, 133);
+  border-radius: 5px;
+  box-shadow: #d1a349 0px 4px 0px 0px;
+  box-sizing: border-box;
+  width: 40px;
+  height: 40px;
+  color: #000000;
+  border: none;
+  font-size: 18px;
+  transition: all .3s ease-in-out;
+  z-index: 1;
+  overflow: hidden;
+  cursor: pointer;
+  margin-bottom: 2em;
+  display: inline-block;
+  text-align: center; /* Center the text */
+}
+
+.logout-button::before {
+  content: "";
+  background-color: #f9c254;
+  width: 0;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  transition: width 700ms ease-in-out;
+  display: inline-block;
+}
+
+.logout-button:hover::before {
+  width: 100%;
 }
 
 .underline {
   text-decoration: underline;
 }
+
+.error {
+  color: red;
+  background-color: #ffcccc;
+  border: 1px solid red;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.modal-content {
+  background-color: #fefefe;
+  margin: auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 30%;
+}
+
+.close {
+  color: #aaaaaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: #000;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/*-------------------MISC-----------------*/

@@ -3,118 +3,251 @@
 <head>
     <meta charset="UTF-8">
     <title>Hangman</title>
+    
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+    
     <script src="{{ url_for('static', filename='script.js') }}"></script>
+
+    <script>
+        window.onload = function() {
+            setupLogoutModal();
+            setupLoginAndRegisterModals();
+        }
+    </script>
 </head>
 <body>
     <div class="container">
         {% block content %}
-        
         <div class="header-container">
-            <img class="logo" id="logo" src="{{ url_for('static', filename='img/logo.png') }}">
-            <h2 class="header">Welcome!</h2>
+            <div class="logo-text">
+                <img class="logo" id="logo" src="{{ url_for('static', filename='img/logo.png') }}">
+                <h2 class="header">Welcome{{ ", " + username if username else "" }}!</h2>
+            </div>
+            {% if logged_in %}
+            <div class="logout">
+                <a id="openLogoutModal" class="logout-button">
+                    <img class="button-icon" src="/static/img/logout.png" />
+                </a>
+            </div>
+            {% endif %}
         </div>
+        
+        <div id="logoutModal" class="login-popup-overlay">
+            <div class="login-popup">
+                <div class="logout-section">
+                    <span class="close">&times;</span>
+                    <h2>Logout</h2>
+                    <p>Are you sure you want to log out?</p>
+                    <div class="button-container2">
+                        <button class="confirm-logout">Yes, Logout</button>
+                        <button class="cancel-logout">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>               
+    
+        <script>
+            window.onload = function() {
+                // Get the modal
+                var modal = document.getElementById("logoutModal");
+    
+                // Get the button that opens the modal
+                var btn = document.getElementById("openLogoutModal");
+    
+                // Get the <span> element that closes the modal
+                var span = document.getElementsByClassName("close")[0];
+    
+                // Get the cancel button
+                var cancelBtn = document.getElementsByClassName("cancel-logout")[0];
+    
+                // When the user clicks the button, open the modal 
+                btn.onclick = function() {
+                  modal.style.display = "flex";
+                }
+    
+                // When the user clicks on <span> (x), close the modal
+                span.onclick = function() {
+                  modal.style.display = "none";
+                }
+    
+                // When the user clicks on cancel button, close the modal
+                cancelBtn.onclick = function() {
+                  modal.style.display = "none";
+                }
+    
+                // When the user clicks anywhere outside of the modal, close it
+                window.onclick = function(event) {
+                  if (event.target == modal) {
+                    modal.style.display = "none";
+                  }
+                }
+
+                document.querySelector('.confirm-logout').addEventListener('click', function() {
+                    window.location.href = "{{ url_for('logout') }}";
+                });
+            }
+        </script>
 
         <div class="left-right-container">
-        
+    
             <div class="left-container">
                 <img class="img-pad" id="hangman-image" src="{{ url_for('static', filename='img/stage0.png') }}">
             </div>
             
             <div class="right-container">
+                {% if not logged_in %}
+                <div class="login-register-container">
+                    <button id="openLoginModal" class="login-button">Login</button>
+                    <button id="openRegisterModal" class="register-button">Register</button>
+                    
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="{{ category }}">{{ message }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
 
-                {% if stats %}
-                <table>
-                    <tbody>
-                        <tr>
-                            <td>Wins:</td>
-                            <td class="cell-value">{{ stats[0][1] }}</td>
-                        </tr>
-                        <tr>
-                            <td>Losses:</td>
-                            <td class="cell-value">{{ stats[0][2] }}</td>
-                        </tr>
-                        <tr>
-                            <td>W/L Ratio:</td>
-                            <td class="cell-value">{{ stats[0][3] }}</td>
-                        </tr>
-                        <tr>
-                            <td>Current Win Streak:</td>
-                            <td class="cell-value">{{ stats[0][4] }}</td>
-                        </tr>
-                        <tr>
-                            <td>Longest Win Streak:</td>
-                            <td class="cell-value">{{ stats[0][5] }}</td>
-                        </tr>
-                    </tbody>
-                </table>
-                {% else %}
-                <p>No stats available</p>
-                {% endif %}
+                
+                    <div id="loginModal" class="login-popup-overlay" style="display: none;">
+                        <div class="login-popup">
+                            <div class="login-section">
+                                <span class="close">&times;</span>
+                                <h2>Login</h2>
+                                <p>Please enter your username and password to continue.</p>
+                                <form method="POST">
+                                    <input type="text" name="username" placeholder="Username">
+                                    <input type="password" name="password" placeholder="Password">
+                                    <button type="submit" name="login">Login</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="registerModal" class="login-popup-overlay" style="display: none;">
+                        <div class="login-popup">
+                            <div class="register-section">
+                                <span class="close">&times;</span>
+                                <h2>Register</h2>
+                                <p>Create a username and password to play.</p>
+                                <form method="POST" class="signup-form">
+                                    <input type="text" name="new_username" placeholder="Username">
+                                    <input type="password" name="new_password" placeholder="Password">
+                                    <button type="submit" name="register">Register</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+
+                <script>
+                    // Login and Register buttons
+                    var loginButton = document.querySelector("#openLoginModal");
+                    var registerButton = document.querySelector("#openRegisterModal");
+            
+                    // Login and Register modals
+                    var loginModal = document.querySelector("#loginModal");
+                    var registerModal = document.querySelector("#registerModal");
+            
+                    // Existing Logout modal and its related elements
+                    var logoutModal = document.querySelector("#logoutModal");
+                    var logoutButton = document.querySelector("#openLogoutModal");
+                    var logoutCloseButton = document.querySelector("#logoutModal .close");
+                    var logoutCancelButton = document.querySelector("#logoutModal .cancel-logout");
+
+                    // get all elements with class 'close'
+                    var closeButtons = document.getElementsByClassName("close");
+
+                    // iterate over the array and add a click event listener to each close button
+                    for(var i = 0; i < closeButtons.length; i++) {
+                        closeButtons[i].onclick = function() {
+                            // Get the parent 'login-popup-overlay' of this close button and hide it
+                            this.parentElement.parentElement.parentElement.style.display = 'none';
+                        }
+                    }
+            
+                    // Open the Login modal
+                    loginButton.onclick = function() {
+                        loginModal.style.display = "flex";
+                    };
+            
+                    // Open the Register modal
+                    registerButton.onclick = function() {
+                        loginModal.style.display = "none";
+                        registerModal.style.display = "flex";
+                    };
+            
+                    // Existing Logout modal functionality
+                    logoutButton.onclick = function() {
+                        logoutModal.style.display = "flex";
+                    };
+            
+                    logoutCloseButton.onclick = function() {
+                        logoutModal.style.display = "none";
+                    };
+            
+                    logoutCancelButton.onclick = function() {
+                        logoutModal.style.display = "none";
+                    };
+            
+                    // When the user clicks anywhere outside of any modal, close it
+                    window.onclick = function(event) {
+                        if (event.target == loginModal || event.target == registerModal || event.target == logoutModal) {
+                            event.target.style.display = "none";
+                        }
+                    };
+
+                    // When the user clicks on <span> (x), close the modal
+                    span.onclick = function() {
+                    modal.style.display = "none";
+                    }
+
+                </script>
+
+                    {% else %}
+                    {% if stats %}
+                        <table>
+                            <tbody>
+                                <tr>
+                                    <td>Wins:</td>
+                                    <td class="cell-value">{{ stats['wins'] }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Losses:</td>
+                                    <td class="cell-value">{{ stats['losses'] }}</td>
+                                </tr>
+                                <tr>
+                                    <td>W/L Ratio:</td>
+                                    <td class="cell-value">{{ stats['win_loss_ratio'] }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Current Win Streak:</td>
+                                    <td class="cell-value">{{ stats['current_win_streak'] }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Longest Win Streak:</td>
+                                    <td class="cell-value">{{ stats['longest_win_streak'] }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <p>No stats available</p>
+                    {% endif %}
+                    {% endif %}
+                
             </div>
-
+    
         </div>
 
         <div class="start-new-game-container">
             <form method="POST" action="{{ url_for('category') }}">
-              <button type="submit" class="start-button">START GAME</button>
+              <button type="submit" class="start-button" {% if not logged_in %}disabled{% endif %}>START GAME</button>
             </form>
         </div>
           
         {% endblock %}
     </div>
-<!--
-    <div class="login-popup-overlay">
-        <div class="login-popup">
-            <div class="login-section">
-                <h2>Login</h2>
-                <form class="login-form">
-                    <input type="text" name="username" placeholder="Username">
-                    <input type="password" name="password" placeholder="Password">
-                    <button type="submit">Login</button>
-                    <button class="create-account-button">Create an Account</button>
-                </form>
-            </div>
-        </div>
-    </div>
 
-    <div class="login-popup-overlay login-popup-overlay-register" style="display: none;">
-        <div class="login-popup">
-            <div class="signup-section">
-                <h2>Create an Account</h2>
-                <form class="signup-form">
-                    <input type="text" name="username" placeholder="Username">
-                    <input type="password" name="password" placeholder="Password">
-                    <button type="submit">Register</button>
-                </form>
-            </div>
-        </div>
-    </div>
-
-</div>
-
-<script>
-    // Open first popup: Login
-    document.querySelector('.login-popup-overlay').style.display = 'flex';
-
-    // Handle click on Create an Account button in the Login popup
-    document.querySelector('.create-account-button').addEventListener('click', function() {
-        document.querySelector('.login-popup-overlay').style.display = 'none';
-        document.querySelector('.login-popup-overlay-register').style.display = 'flex';
-    });
-
-    // Submit the login form (dummy behavior, no actual login functionality)
-    document.querySelector('.login-form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        alert('Login form submitted!');
-    });
-
-    // Submit the register form (dummy behavior, no actual registration functionality)
-    document.querySelector('.signup-form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        alert('Register form submitted!');
-    });
-</script>
--->
 </body>
 </html>
