@@ -231,8 +231,6 @@
                                 </tr>
                             </tbody>
                         </table>
-                    {% else %}
-                        <p>No stats available</p>
                     {% endif %}
                     {% endif %}
                 
@@ -241,9 +239,16 @@
         </div>
 
         <div class="start-new-game-container">
-            <form method="POST" action="{{ url_for('category') }}">
-              <button type="submit" class="start-button" {% if not logged_in %}disabled{% endif %}>START GAME</button>
+            {% if not logged_in %}
+            <form method="POST" action="{{ url_for('base') }}">
+                <input type="hidden" name="guest" value="1">
+                <button type="submit" class="start-button">PLAY AS GUEST</button>
             </form>
+            {% else %}
+            <form method="POST" action="{{ url_for('category') }}">
+              <button type="submit" class="start-button">START GAME</button>
+            </form>
+            {% endif %}
         </div>
           
         {% endblock %}

@@ -23,6 +23,7 @@ countries = [
     'SOUTH AFRICA',
     'NEW ZEALAND',
     'UNITED KINGDOM',
+    'UNITED STATES',
     'SAUDI ARABIA',
     'CZECH REPUBLIC',
     'SOUTH KOREA',

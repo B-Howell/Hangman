@@ -52,6 +52,9 @@ def base():
                 conn.commit()
                 session['user_id'] = user_id
 
+        elif 'guest' in request.form:   # Assume a form input 'guest' is present when the user chooses to play as a guest
+            session['is_guest'] = True
+            return redirect(url_for('category'))
 
         cur.close()
 
@@ -76,19 +79,20 @@ def logout():
 
 @app.route('/category', methods=['GET', 'POST'])
 def category():
-    conn = mysql.connect
-    try:
-        cur = conn.cursor()
-        print(f"Fetching stats for user id {session.get('user_id')}")
-        cur.execute("SELECT * FROM stats WHERE user_id = %s", (session.get('user_id'),))
-        stats = cur.fetchone()
-        print(f"Fetched stats: {stats}")
-    except Exception as e:
-        print(f"Error executing database query: {e}")
-        stats = None
-    finally:
-        cur.close()
-        conn.close()
+    stats = None
+    if 'user_id' in session:
+        conn = mysql.connect
+        try:
+            cur = conn.cursor()
+            print(f"Fetching stats for user id {session.get('user_id')}")
+            cur.execute("SELECT * FROM stats WHERE user_id = %s", (session.get('user_id'),))
+            stats = cur.fetchone()
+            print(f"Fetched stats: {stats}")
+            cur.close()
+        except Exception as e:
+            print(f"Error executing database query: {e}")
+        finally:
+            conn.close()
 
     if request.method == 'POST':
         category = request.form.get('category')
@@ -152,7 +156,7 @@ def play():
         finally:
             conn.close()
     else:
-        return redirect(url_for('base'))
+        stats = None
 
     game = session.get('game')
     if game:

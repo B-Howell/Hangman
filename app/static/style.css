@@ -69,6 +69,11 @@ h1, h2, h3 {
   margin-bottom: 10px;
 }
 
+.button-container3 {
+  margin-bottom: 10px;
+
+}
+
 .letter-category-container, .start-new-game-container {
   width: 100%;
   height: 25%;
@@ -140,23 +145,6 @@ h1, h2, h3 {
   margin-right: .4em;
 }
 
-.login-button::before {
-  content: "";
-  background-color: #f9c254;
-  width: 0;
-  height: 100%;
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: -1;
-  transition: width 700ms ease-in-out;
-  display: inline-block;
-}
-
-.login-button:hover::before {
-  width: 100%;
-}
-
 .register-button {
   display: flex;
   justify-content: center;
@@ -181,7 +169,35 @@ h1, h2, h3 {
   margin-top: 1em;
 }
 
-.register-button::before {
+.login-button2,
+.register-button2 {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  background-color: rgb(255, 212, 133);
+  border-radius: 5px;
+  box-shadow: #d1a349 0px 4px 0px 0px;
+  padding: 15px;
+  background-repeat: no-repeat;
+  box-sizing: border-box;
+  width: 160px;
+  height: 40px;
+  color: #000000;
+  border: none;
+  font-size: 20px;
+  transition: all .3s ease-in-out;
+  z-index: 1;
+  overflow: hidden;
+  cursor: pointer;
+  margin-right: .4em;
+  margin-top: .5em;
+}
+
+.login-button::before,
+.login-button2::before,
+.register-button::before,
+.register-button2::before {
   content: "";
   background-color: #f9c254;
   width: 0;
@@ -194,7 +210,10 @@ h1, h2, h3 {
   display: inline-block;
 }
 
-.register-button:hover::before {
+.login-button:hover::before,
+.login-button2:hover::before,
+.register-button:hover::before,
+.register-button2:hover::before {
   width: 100%;
 }
 
