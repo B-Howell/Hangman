@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from flask_mysqldb import MySQL
-from werkzeug.security import generate_password_hash, check_password_hash
 from config import Config
+from auth import auth
 import random
 import hangman_words
 import MySQLdb.cursors
@@ -9,6 +9,7 @@ import MySQLdb.cursors
 app = Flask(__name__)
 app.config.from_object(Config)
 mysql = MySQL(app)
+app.register_blueprint(auth, mysql=mysql)
 
 class User:
     def __init__(self, id, username, password):
@@ -18,60 +19,20 @@ class User:
 
 @app.route('/', methods=['GET', 'POST'])
 def base():
-    if request.method == 'POST':
-        conn = mysql.connect
-        cur = conn.cursor(MySQLdb.cursors.DictCursor)
-
-        if 'login' in request.form:
-            username = request.form.get('username')
-            password = request.form.get('password')
-
-            cur.execute("SELECT * FROM users WHERE username = %s", (username,))
-            user = cur.fetchone()
-
-            if user and check_password_hash(user['password'], password):
-                session['user_id'] = user['user_id']
-                session['username'] = username 
-            else:
-                print("Login failed")
-
-        elif 'register' in request.form:
-            username = request.form.get('new_username')
-            cur.execute("SELECT * FROM users WHERE username = %s", (username,))
-            existing_user = cur.fetchone()
-
-            if existing_user:
-                print('User already exists')
-                flash('Username already taken. Please choose another.', 'error')
-            else:
-                password = generate_password_hash(request.form.get('new_password'))
-                cur.execute("INSERT INTO users (user_id, username, password, provider) VALUES (%s, %s, %s, %s)", (None, username, password, 'manual'))
-                conn.commit()
-                user_id = cur.lastrowid
-                cur.execute("INSERT INTO stats (user_id, wins, losses, win_loss_ratio, current_win_streak, longest_win_streak) VALUES (%s, 0, 0, 0.0, 0, 0)", (user_id,))
-                conn.commit()
-                session['user_id'] = user_id
-
-        elif 'guest' in request.form:   # Assume a form input 'guest' is present when the user chooses to play as a guest
-            session['is_guest'] = True
-            return redirect(url_for('category'))
-
-        cur.close()
-
-    stats = None
     if 'user_id' in session:
-        conn = mysql.connect
-        cur = conn.cursor(MySQLdb.cursors.DictCursor)   # Use a dictionary cursor
+        conn = mysql.connection
+        cur = conn.cursor(MySQLdb.cursors.DictCursor)
         cur.execute("SELECT * FROM stats WHERE user_id = %s", (session['user_id'],))
         stats = cur.fetchone()
         cur.close()
-        conn.close()
-
-
         return render_template('base.html', logged_in=True, stats=stats, username=session.get('username', ''))
-    else:
-        return render_template('base.html', logged_in=False, stats=stats, username=session.get('username', ''))
     
+    if request.method == 'POST' and 'guest' in request.form:
+        session['is_guest'] = True
+        return redirect(url_for('category'))
+    
+    return render_template('base.html', logged_in=False)
+
 @app.route('/logout')
 def logout():
     session.clear()

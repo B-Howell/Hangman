@@ -55,12 +55,12 @@ animals = [
     'FLAMINGO',
     'BLACK BEAR',
     'POLAR BEAR',
-    'WHITE TIGER',
+    'TIGER',
     'RED FOX',
-    'GOLDEN EAGLE',
+    'BALD EAGLE',
     'BLUE WHALE',
     'ORANGUTAN',
-    'GREAT WHITE SHARK',
+    'SHARK',
     'KILLER WHALE',
     'HUMPBACK WHALE'
 ]
@@ -157,7 +157,8 @@ professions = [
     'LAWYER',
     'ACCOUNTANT',
     'SOCIAL WORKER',
-    'CHEMIST'
+    'CHEMIST',
+    'POLICE OFFICER'
 ]
 
 instruments = [

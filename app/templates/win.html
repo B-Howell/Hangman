@@ -15,11 +15,17 @@
                 <h2 class="header">You Win!</h2>
             </div>
             {% if logged_in %}
-                <div class="logout">
-                    <a id="openLogoutModal" class="logout-button">
-                        <img class="button-icon" src="/static/img/logout.png" />
-                    </a>
-                </div>
+            <div class="logout">
+                <a id="openLogoutModal" class="logout-button">
+                    <img class="button-icon" src="/static/img/logout.png" />
+                </a>
+            </div>
+            {% else %}
+            <div class="logout">
+                <a id="openLoginButton" class="logout-button">
+                    <img class="button-icon" src="/static/img/login.png" />
+                </a>
+            </div>            
             {% endif %}
           </div>
 
@@ -27,86 +33,58 @@
             <div class="login-popup">
                 <div class="logout-section">
                     <span class="close">&times;</span>
+                    {% if logged_in %}
                     <h2>Logout</h2>
                     <p>Are you sure you want to log out?</p>
                     <div class="button-container2">
                         <button class="confirm-logout">Yes, Logout</button>
                         <button class="cancel-logout">Cancel</button>
                     </div>
+                    {% else %}
+                    <h2>Login or Register</h2>
+                    <div class="button-container2">
+                        <button id="openLoginModal" class="login-button2">Login</button>
+                        <button id="openRegisterModal" class="register-button">Register</button>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
 
-        <script>
-          window.addEventListener('load', function() {
-              // Get the modal
-              var modal = document.getElementById("logoutModal");
-      
-              // Get the button that opens the modal
-              var btn = document.getElementById("openLogoutModal");
-      
-              // Get the <span> element that closes the modal
-              var span = document.getElementsByClassName("close")[0];
-      
-              // Get the cancel button
-              var cancelBtn = document.getElementsByClassName("cancel-logout")[0];
-      
-              // When the user clicks the button, open the modal 
-              btn.onclick = function() {
-                  modal.style.display = "flex";
-              }
-      
-              // When the user clicks on <span> (x), close the modal
-              span.onclick = function() {
-                  modal.style.display = "none";
-              }
-      
-              // When the user clicks on cancel button, close the modal
-              cancelBtn.onclick = function() {
-                  modal.style.display = "none";
-              }
-      
-              // When the user clicks anywhere outside of the modal, close it
-              window.onclick = function(event) {
-                  if (event.target == modal) {
-                      modal.style.display = "none";
-                  }
-              }
-      
-              document.querySelector('.confirm-logout').addEventListener('click', function() {
-                  window.location.href = "{{ url_for('logout') }}";
-              });
-          })
-      </script>
+        <div id="loginModal" class="login-popup-overlay" style="display: none;">
+            <div class="login-popup">
+                <div class="login-section">
+                    <span class="close">&times;</span>
+                    <h2>Login</h2>
+                    <p>Please enter your username and password to continue.</p>
+                    <form method="POST" action="{{ url_for('auth.login') }}">
+                        <input type="text" name="username" placeholder="Username">
+                        <input type="password" name="password" placeholder="Password">
+                        <button type="submit" name="login">Login</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div id="registerModal" class="login-popup-overlay" style="display: none;">
+            <div class="login-popup">
+                <div class="register-section">
+                    <span class="close">&times;</span>
+                    <h2>Register</h2>
+                    <p>Create a username and password to play.</p>
+                    <form method="POST" action="{{ url_for('auth.register') }}">
+                        <input type="text" name="new_username" placeholder="Username">
+                        <input type="password" name="new_password" placeholder="Password">
+                        <button type="submit" name="register">Register</button>
+                    </form>
+                </div>
+            </div>
+        </div>
 
         <div class="left-right-container">
         
             <div class="left-container">
                 <img class="img-pad" id="hangman-image" src="{{ url_for('static', filename='img/stage0.png') }}">
-
-                <script>
-                    window.onload = function() {
-                        var lives = {{ lives }};
-                        var hangmanImage = document.getElementById("hangman-image");
-                        
-                        if (lives == 6) {
-                            hangmanImage.src = "{{ url_for('static', filename='img/stage0.png') }}";
-                        } else if (lives == 5) {
-                            hangmanImage.src = "{{ url_for('static', filename='img/stage1.png') }}";
-                        } else if (lives == 4) {
-                            hangmanImage.src = "{{ url_for('static', filename='img/stage2.png') }}";
-                        } else if (lives == 3) {
-                            hangmanImage.src = "{{ url_for('static', filename='img/stage3.png') }}";
-                        } else if (lives == 2) {
-                            hangmanImage.src = "{{ url_for('static', filename='img/stage4.png') }}";
-                        } else if (lives == 1) {
-                            hangmanImage.src = "{{ url_for('static', filename='img/stage5.png') }}";
-                        } else if (lives == 0){
-                            hangmanImage.src = "{{ url_for('static', filename='img/stage6.png') }}";
-                        } 
-                    }
-                </script>
-
             </div>
             
             <div class="right-container">
@@ -153,5 +131,91 @@
         </div>
 
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            
+            var lives = {{ lives }};
+            var hangmanImage = document.getElementById("hangman-image");
+            
+            if (lives == 6) {
+                hangmanImage.src = "{{ url_for('static', filename='img/stage0.png') }}";
+            } else if (lives == 5) {
+                hangmanImage.src = "{{ url_for('static', filename='img/stage1.png') }}";
+            } else if (lives == 4) {
+                hangmanImage.src = "{{ url_for('static', filename='img/stage2.png') }}";
+            } else if (lives == 3) {
+                hangmanImage.src = "{{ url_for('static', filename='img/stage3.png') }}";
+            } else if (lives == 2) {
+                hangmanImage.src = "{{ url_for('static', filename='img/stage4.png') }}";
+            } else if (lives == 1) {
+                hangmanImage.src = "{{ url_for('static', filename='img/stage5.png') }}";
+            } else if (lives == 0){
+                hangmanImage.src = "{{ url_for('static', filename='img/stage6.png') }}";
+            } 
+            
+            var loginModal = document.getElementById("loginModal");
+            var registerModal = document.getElementById("registerModal");
+            var logoutModal = document.getElementById("logoutModal");
+
+            var openLogoutBtn;
+            if (document.getElementById("openLogoutModal")) {
+                openLogoutBtn = document.getElementById("openLogoutModal");
+            } else {
+                openLogoutBtn = document.getElementById("openLoginButton");
+            }
+
+            var openLoginBtn = document.getElementById("openLoginModal");
+            var openRegisterBtn = document.getElementById("openRegisterModal");
+
+            var closeButtons = document.querySelectorAll(".close");
+            
+            var confirmLogout = document.querySelector('.confirm-logout');
+            var cancelLogout = document.querySelector('.cancel-logout');
+            
+            openLogoutBtn.onclick = function() {
+                {% if logged_in %}
+                    logoutModal.style.display = "flex";
+                {% else %}
+                    logoutModal.style.display = "flex";
+                {% endif %}
+            }
+
+            if(confirmLogout){
+                confirmLogout.addEventListener('click', function() {
+                    window.location.href = "{{ url_for('auth.logout') }}";
+                });
+            }
+
+            if(cancelLogout){
+                cancelLogout.addEventListener('click', function() {
+                    logoutModal.style.display = "none";
+                });
+            }
+
+            openLoginBtn.onclick = function() {
+                logoutModal.style.display = "none";
+                loginModal.style.display = "flex";
+            }
+
+            openRegisterBtn.onclick = function() {
+                logoutModal.style.display = "none";
+                registerModal.style.display = "flex";
+            }
+
+            for (var i = 0; i < closeButtons.length; i++) {
+                closeButtons[i].onclick = function() {
+                    this.parentElement.parentElement.parentElement.style.display = "none";
+                }
+            }
+
+            window.onclick = function(event) {
+                if (event.target == logoutModal || event.target == loginModal || event.target == registerModal) {
+                    event.target.style.display = "none";
+                }
+            }
+        });
+    </script>
+
   </body>
 </html>

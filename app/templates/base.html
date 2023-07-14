@@ -83,7 +83,7 @@
                 }
 
                 document.querySelector('.confirm-logout').addEventListener('click', function() {
-                    window.location.href = "{{ url_for('logout') }}";
+                    window.location.href = "{{ url_for('auth.logout') }}";
                 });
             }
         </script>
@@ -115,7 +115,7 @@
                                 <span class="close">&times;</span>
                                 <h2>Login</h2>
                                 <p>Please enter your username and password to continue.</p>
-                                <form method="POST">
+                                <form method="POST" action="{{ url_for('auth.login') }}">
                                     <input type="text" name="username" placeholder="Username">
                                     <input type="password" name="password" placeholder="Password">
                                     <button type="submit" name="login">Login</button>
@@ -130,7 +130,7 @@
                                 <span class="close">&times;</span>
                                 <h2>Register</h2>
                                 <p>Create a username and password to play.</p>
-                                <form method="POST" class="signup-form">
+                                <form method="POST" action="{{ url_for('auth.register') }}">
                                     <input type="text" name="new_username" placeholder="Username">
                                     <input type="password" name="new_password" placeholder="Password">
                                     <button type="submit" name="register">Register</button>
