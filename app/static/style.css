@@ -84,7 +84,7 @@ h1, h2, h3 {
 
 .start-button {
   position: relative;
-  background-color: rgb(255, 212, 133);
+  background-image: url("img/wooden-texture.jpg");
   border-radius: 5px;
   box-shadow: #d1a349 0px 4px 0px 0px;
   padding: 15px;
@@ -100,9 +100,10 @@ h1, h2, h3 {
   overflow: hidden;
   cursor: pointer;
   }
-.start-button::before {
+
+  .start-button::before {
     content: "";
-    background-color: #f9c254;
+    background-image: url("img/wooden-texture2.jpg");
     width: 0;
     height: 100%;
     position: absolute;
@@ -123,7 +124,7 @@ h1, h2, h3 {
   justify-content: center;
   align-items: center;
   position: relative;
-  background-color: rgb(255, 212, 133);
+  background-image: url("img/wooden-texture.jpg");
   border-radius: 5px;
   box-shadow: #d1a349 0px 4px 0px 0px;
   padding: 15px;
@@ -146,7 +147,7 @@ h1, h2, h3 {
   justify-content: center;
   align-items: center;
   position: relative;
-  background-color: rgb(255, 212, 133);
+  background-image: url("img/wooden-texture.jpg");
   border-radius: 5px;
   box-shadow: #d1a349 0px 4px 0px 0px;
   padding: 15px;
@@ -171,7 +172,7 @@ h1, h2, h3 {
   justify-content: center;
   align-items: center;
   position: relative;
-  background-color: rgb(255, 212, 133);
+  background-color: #d1a349;
   border-radius: 5px;
   box-shadow: #d1a349 0px 4px 0px 0px;
   padding: 15px;
@@ -188,6 +189,20 @@ h1, h2, h3 {
   cursor: pointer;
   margin-right: .4em;
   margin-top: .5em;
+}
+
+.login-button::before,
+.register-button::before {
+  content: "";
+  background-image: url("img/wooden-texture2.jpg");
+  width: 0;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  transition: width 700ms ease-in-out;
+  display: inline-block;
 }
 
 .login-button::before,
@@ -226,7 +241,7 @@ h1, h2, h3 {
 
 .category-button {
   position: relative;
-  background-color: rgb(255, 212, 133);
+  background-image: url("img/wooden-texture.jpg");
   border-radius: 5px;
   box-shadow: #d1a349 0px 4px 0px 0px;
   padding: 15px;
@@ -246,7 +261,7 @@ h1, h2, h3 {
 }
 .category-button::before {
   content: "";
-  background-color: #f9c254;
+  background-image: url("img/wooden-texture2.jpg");
   width: 0;
   height: 100%;
   position: absolute;
@@ -293,7 +308,7 @@ h1, h2, h3 {
 
 .letter-button {
   position: relative;
-  background-color: rgb(255, 212, 133);
+  background-image: url("img/wooden-texture.jpg");
   border-radius: 5px;
   box-shadow: #d1a349 0px 4px 0px 0px;
   padding: 15px;
@@ -313,7 +328,7 @@ h1, h2, h3 {
 
 .letter-button::before {
 content: "";
-background-color: #f9c254;
+background-image: url("img/wooden-texture2.jpg");
 width: 0;
 height: 100%;
 position: absolute;
@@ -339,7 +354,7 @@ width: 100%;
 
 .new-game-stats-button {
   position: relative;
-  background-color: rgb(255, 212, 133);
+  background-image: url("img/wooden-texture.jpg");
   border-radius: 5px;
   box-shadow: #d1a349 0px 4px 0px 0px;
   padding: 15px;
@@ -359,7 +374,7 @@ width: 100%;
 
 .new-game-stats-button::before {
   content: "";
-  background-color: #f9c254;
+  background-image: url("img/wooden-texture2.jpg");
   width: 0;
   height: 100%;
   position: absolute;
@@ -440,9 +455,7 @@ width: 100%;
 
 /*-----RIGHT-CONTAINER-----*/
 
-.hangman-answer {
-  white-space: pre-wrap;
-}
+
 
 .text-pad {
   padding-left: 1em;
@@ -452,6 +465,11 @@ width: 100%;
 .cell-value {
   text-align: center;
   font-weight: bold;
+}
+
+th {
+  padding: 1em;
+  text-align: center;
 }
 
 /*-----------------------------POPUPS-----------------------*/
@@ -636,7 +654,7 @@ width: 100%;
 
 .logout-button {
   position: relative;
-  background-color: rgb(255, 212, 133);
+  background-image: url("img/wooden-texture.jpg");
   border-radius: 5px;
   box-shadow: #d1a349 0px 4px 0px 0px;
   box-sizing: border-box;
@@ -656,7 +674,7 @@ width: 100%;
 
 .logout-button::before {
   content: "";
-  background-color: #f9c254;
+  background-image: url("img/wooden-texture2.jpg");
   width: 0;
   height: 100%;
   position: absolute;
@@ -706,3 +724,78 @@ width: 100%;
 }
 
 /*-------------------MISC-----------------*/
+
+table {
+  position: relative;
+  width: 70%;
+  margin: 0 auto; /* Centers the table */
+  background-image: url("img/wooden-texture.jpg");
+  background-size: cover;
+  background-repeat: no-repeat;
+  border-collapse: collapse;
+  border: 4px solid #704214;
+  color: #000000;
+}
+
+table td {
+  padding: 5px;
+  border: 2px solid #704214;
+}
+
+.cell-value {
+  text-align: right;
+}
+
+table::after {
+  content: "";
+  position: absolute;
+  width: 10px;
+  height: 100px; 
+  background: #704214;
+  bottom: -100px;
+  left: 50%; 
+  transform: translateX(-50%);
+}
+
+table.no-style {
+  width: 100%;
+  background-image: none;
+  border-collapse: separate;
+  border: 0;
+  color: inherit;
+}
+
+table.no-style td {
+  padding: initial;
+  border: initial;
+  background-color: inherit;
+  text-align: inherit;
+}
+
+table.no-style::after {
+  content: none;
+}
+
+.sign-text {
+  position: relative;
+  background-image: url("img/wooden-texture.jpg");
+  background-size: cover;
+  background-repeat: no-repeat;
+  padding: 20px;
+  border: 4px solid #704214; /* border color simulating the edge of a wooden board */
+  color: #000000; /* Text color that would contrast well with the wooden texture */
+  text-align: center;
+  border-radius: 10px; /* Giving the sign a slight curve */
+  display: inline-block;
+}
+
+.sign-text::after {
+  content: "";
+  position: absolute;
+  width: 10px;
+  height: 100px; 
+  background: #704214;
+  bottom: -100px;
+  left: 50%; 
+  transform: translateX(-50%);
+}

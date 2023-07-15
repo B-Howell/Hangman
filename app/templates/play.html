@@ -92,7 +92,7 @@
       
       <div class="right-container">
         <h3 class="text-pad">
-          <p id="hidden-word" class="hangman-answer" style="font-family: monospace; font-size: 1.4em; white-space: normal;"></p>
+          <p id="hidden-word" class="sign-text" style="font-family: monospace; font-size: 1.4em; white-space: normal;"></p>
         </h3>
 
         <h3><p class="guessed-letters"></p></h3>
@@ -121,30 +121,30 @@
       <span class="close-button" id="closeButtonStats">&times;</span>
       <h3>Your Stats:</h3>
         {% if stats %}
-          <table>
-            <tbody>
-              <tr>
-                <td>Wins:</td>
-                <td class="cell-value">{{ stats[1] }}</td>
-              </tr>
-              <tr>
-                <td>Losses:</td>
-                <td class="cell-value">{{ stats[2] }}</td>
-              </tr>
-              <tr>
-                <td>W/L Ratio:</td>
-                <td class="cell-value">{{ stats[3] }}</td>
-              </tr>
-              <tr>
-                <td>Current Win Streak:</td>
-                <td class="cell-value">{{ stats[4] }}</td>
-              </tr>
-              <tr>
-                <td>Longest Win Streak:</td>
-                <td class="cell-value">{{ stats[5] }}</td>
-              </tr>
-            </tbody>
-          </table>
+            <table class="no-style">
+              <tbody>
+                  <tr>
+                      <td>Wins:</td>
+                      <td class="cell-value">{{ stats[1] }}</td>
+                  </tr>
+                  <tr>
+                      <td>Losses:</td>
+                      <td class="cell-value">{{ stats[2] }}</td>
+                  </tr>
+                  <tr>
+                      <td>W/L Ratio:</td>
+                      <td class="cell-value">{{ stats[3] }}</td>
+                  </tr>
+                  <tr>
+                      <td>Current Win Streak:</td>
+                      <td class="cell-value">{{ stats[4] }}</td>
+                  </tr>
+                  <tr>
+                      <td>Longest Win Streak:</td>
+                      <td class="cell-value">{{ stats[5] }}</td>
+                  </tr>
+              </tbody>
+            </table>      
         {% else %}
           <p>Please login or register if you would like to track your stats.</p>
         {% endif %}
@@ -226,41 +226,45 @@
       }
     
       function updateHiddenWordDisplay() {
-        var incorrectLetters = "{{ ' '.join(incorrect_letters) }}".split(' ');
-        var correctLetters = "{{ ' '.join(correct_letters) }}".split(' ');
-        var hiddenWordElement = document.getElementById("hidden-word");
-        var hiddenWord = "{{ hidden_word|join('')|replace('\u00A0', ' ') }}";
-        var maxLineLength = 32;  
-        var words = hiddenWord.split('   ');
-        var lines = [];
-        var currentLine = '';
-    
-        words.forEach(function(word, index) {
-            var space = index == 0 ? '' : '&nbsp;&nbsp;&nbsp;'; 
-            var formattedWord = "";
-    
-            for (var i = 0; i < word.length; i++) {
-                if (word[i] !== "_" && word[i] !== " ") {
-                    formattedWord += '<span class="underline">' + word[i] + '</span>';
-                } else {
-                    formattedWord += word[i];
-                }
-            }
-    
-            if ((currentLine.length + formattedWord.length + space.length) > maxLineLength) {
-                lines.push(currentLine);
-                currentLine = formattedWord;
-            } else {
-                currentLine += space + formattedWord;
-            }
-        });
-    
-        if (currentLine.length > 0) {
-            lines.push(currentLine);
-        }
-    
-        hiddenWordElement.innerHTML = lines.join('<br>');
+          var incorrectLetters = "{{ ' '.join(incorrect_letters) }}".split(' ');
+          var correctLetters = "{{ ' '.join(correct_letters) }}".split(' ');
+          var hiddenWordElement = document.getElementById("hidden-word");
+          var hiddenWord = "{{ hidden_word|join('')|replace('\u00A0', ' ') }}";
+          var maxLineLength = 32;  
+          var words = hiddenWord.split('   ');
+          var lines = [];
+          var currentLine = '';
+          var currentLineLength = 0;
+
+          words.forEach(function(word, index) {
+              var space = index == 0 ? '' : '&nbsp;&nbsp;&nbsp;'; 
+              var formattedWord = "";
+
+              for (var i = 0; i < word.length; i++) {
+                  if (word[i] !== "_" && word[i] !== " ") {
+                      formattedWord += '<span class="underline">' + word[i] + '</span>';
+                  } else {
+                      formattedWord += word[i];
+                  }
+              }
+
+              if ((currentLineLength + word.length + space.length) > maxLineLength) {
+                  lines.push(currentLine);
+                  currentLine = formattedWord;
+                  currentLineLength = word.length;
+              } else {
+                  currentLine += space + formattedWord;
+                  currentLineLength += space.length + word.length;
+              }
+          });
+
+          if (currentLine.length > 0) {
+              lines.push(currentLine);
+          }
+
+          hiddenWordElement.innerHTML = lines.join('<br>');
       }
+
     
       function disableGuessedLetters() {
         var incorrectLetters = "{{ ' '.join(incorrect_letters) }}".split(' ');
