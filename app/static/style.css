@@ -1,6 +1,5 @@
 html, body {
   font-family: sans-serif;
-  background-color: rgb(255, 251, 244);
 }
 
 body {
@@ -15,6 +14,8 @@ h1, h2, h3 {
 /*----------------------CONTAINER CODE----------------------*/
 
 .container {
+  background-image: url("img/background.png");
+  background-size: cover;
   width: 650px;
   height: 650px;
   border: 2.5px solid black;
@@ -67,11 +68,6 @@ h1, h2, h3 {
   display: flex;
   justify-content: start;
   margin-bottom: 10px;
-}
-
-.button-container3 {
-  margin-bottom: 10px;
-
 }
 
 .letter-category-container, .start-new-game-container {
@@ -265,13 +261,22 @@ h1, h2, h3 {
   width: 100%;
 }
 
-.button-icon {
+.category-button-icon {
   width: 30px;
   height: 30px;
   position: absolute; 
   left: .5em; 
   top: 50%; 
   transform: translateY(-50%); 
+}
+
+.login-logout-button-icon {
+  width: 30px;
+  height: 30px;
+  position: absolute; 
+  left: .35em; 
+  top: 15%; 
+  transform: scale(1.3) 
 }
 
 .button-text {
