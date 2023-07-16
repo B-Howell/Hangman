@@ -10,9 +10,14 @@ etc/
 resume-css/
 
 old-config.py
+entry-points.py
+
+app local/
 
 Diagram.svg
 diagram.xml
 Hangman.svg
 
 docker-run-cmd
+
+old-terraform/

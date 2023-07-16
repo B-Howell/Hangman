@@ -274,7 +274,16 @@
             </tbody>
         </table>
         {% else %}
-        <p></p>
+        <table>
+            <thead>
+                <tr>
+                    <th colspan="2">
+                      The Answer Was: <br/>
+                      {{ word }}
+                    </th>
+                </tr>
+            </thead>
+        </table>
         {% endif %}
       </div> 
         
