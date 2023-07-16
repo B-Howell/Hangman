@@ -9,6 +9,10 @@ appv1/
 etc/
 resume-css/
 
+old-config.py
+
 Diagram.svg
 diagram.xml
 Hangman.svg
+
+docker-run-cmd

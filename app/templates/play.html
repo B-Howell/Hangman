@@ -5,6 +5,7 @@
     <title>Hangman - Play</title>
 
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
 </head>
 
@@ -54,34 +55,36 @@
   </div>
 
   <div id="loginModal" class="login-popup-overlay" style="display: none;">
-      <div class="login-popup">
-          <div class="login-section">
-              <span class="close">&times;</span>
-              <h2>Login</h2>
-              <p>Please enter your username and password to continue.</p>
-              <form method="POST" action="{{ url_for('auth.login') }}">
-                  <input type="text" name="username" placeholder="Username">
-                  <input type="password" name="password" placeholder="Password">
-                  <button type="submit" name="login">Login</button>
-              </form>
-          </div>
-      </div>
-  </div>
-  
-  <div id="registerModal" class="login-popup-overlay" style="display: none;">
-      <div class="login-popup">
-          <div class="register-section">
-              <span class="close">&times;</span>
-              <h2>Register</h2>
-              <p>Create a username and password to play.</p>
-              <form method="POST" action="{{ url_for('auth.register') }}">
-                  <input type="text" name="new_username" placeholder="Username">
-                  <input type="password" name="new_password" placeholder="Password">
-                  <button type="submit" name="register">Register</button>
-              </form>
-          </div>
-      </div>
-  </div>
+        <div class="login-popup">
+            <div class="login-section">
+                <span class="close">&times;</span>
+                <h2>Login</h2>
+                <p>Please enter your username and password to continue.</p>
+                <div id="login-error" style="color: red;"></div>
+                <form method="POST" action="{{ url_for('auth.login') }}">
+                    <input type="text" name="username" placeholder="Username">
+                    <input type="password" name="password" placeholder="Password">
+                    <button type="submit" name="login">Login</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="registerModal" class="login-popup-overlay" style="display: none;">
+        <div class="login-popup">
+            <div class="register-section">
+                <span class="close">&times;</span>
+                <h2>Register</h2>
+                <p>Create a username and password to play.</p>
+                <div id="register-error" style="color: red;"></div>
+                <form method="POST" action="{{ url_for('auth.register') }}">
+                    <input type="text" name="new_username" placeholder="Username">
+                    <input type="password" name="new_password" placeholder="Password">
+                    <button type="submit" name="register">Register</button>
+                </form>
+            </div>
+        </div>
+    </div>
   
     <div class="left-right-container">
         
@@ -391,6 +394,45 @@
       }
     </script>
 
+    <script>
+      $(document).ready(function(){
+          // Login form submission
+          $("form[action='{{ url_for('auth.login') }}']").on('submit', function(e){
+              e.preventDefault();
+              var form = $(this);
+              $.ajax({
+                  url: form.attr('action'),
+                  type: 'POST',
+                  data: form.serialize(),
+                  success: function(data) {
+                      if(data.error){
+                          $('#login-error').html(data.error);  // Show error message in the login modal
+                      } else {
+                          location.reload();  // Reload page on successful login
+                      }
+                  }
+              });
+          });
+
+          // Register form submission
+          $("form[action='{{ url_for('auth.register') }}']").on('submit', function(e){
+              e.preventDefault();
+              var form = $(this);
+              $.ajax({
+                  url: form.attr('action'),
+                  type: 'POST',
+                  data: form.serialize(),
+                  success: function(data) {
+                      if(data.error){
+                          $('#register-error').html(data.error);  // Show error message in the register modal
+                      } else {
+                          location.reload();  // Reload page on successful registration
+                      }
+                  }
+              });
+          });
+      });
+    </script>
    
 </body>
 </html>
