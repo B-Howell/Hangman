@@ -364,7 +364,6 @@ resource "aws_lb_listener" "https_listener" {
   }
 }
 
-
 #-----------------Elastic-Container-Service-----------------#
 #- Creates an ECS Cluster for the app to run in aswell as:  #
 #- TASK DEFINITION - Pulls image from ECR Repo, defines the #
@@ -511,3 +510,99 @@ resource "aws_appautoscaling_policy" "auto_scaling_policy" {
   }
 }
 
+#-------------------------Cognito---------------------------#
+
+data "aws_ses_domain_identity" "example" {
+  domain = "brettmhowell.com"
+}
+
+resource "aws_ses_email_identity" "ses_email_identity" {
+  email = "noreply@brettmhowell.com"
+}
+
+resource "aws_iam_role" "cognito_ses" {
+  name = "CognitoSESSendingRole"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect  = "Allow"
+        Principal = {
+          Service = "cognito-idp.amazonaws.com"
+        }
+        Action  = "sts:AssumeRole"
+      },
+    ]
+  })
+}
+
+resource "aws_iam_role_policy" "cognito_ses" {
+  name = "CognitoSESSendingPolicy"
+  role = aws_iam_role.cognito_ses.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow",
+        Action   = ["ses:SendEmail", "ses:SendRawEmail"]
+        Resource = "*"
+      },
+    ]
+  })
+}
+
+resource "aws_cognito_user_pool" "main" {
+  name = "hangman_user_pool"
+
+  username_attributes = ["email"]
+
+  schema {
+    attribute_data_type = "String"
+    name = "email"
+    required = true
+    mutable = true
+    developer_only_attribute = false
+  }
+
+  schema {
+    attribute_data_type = "String"
+    name = "preferred_username"
+    required = true
+    mutable = true
+    developer_only_attribute = false
+  }
+
+  password_policy {
+    minimum_length = 8
+    require_lowercase = false
+    require_numbers = false
+    require_symbols = false
+    require_uppercase = false
+  }
+
+  admin_create_user_config {
+    allow_admin_create_user_only = false
+  }
+
+  auto_verified_attributes = ["email"]
+
+  email_configuration {
+    source_arn = aws_ses_email_identity.ses_email_identity.arn
+    email_sending_account = "DEVELOPER"
+  }
+}
+
+resource "aws_cognito_user_pool_client" "client" {
+  name = "hangman_user_pool_client"
+
+  user_pool_id = aws_cognito_user_pool.main.id
+
+  explicit_auth_flows = [
+    "ALLOW_USER_SRP_AUTH",
+    "ALLOW_REFRESH_TOKEN_AUTH"
+  ]
+
+  generate_secret = true
+}
