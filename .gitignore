@@ -1,7 +1,10 @@
+terraform/variables.tf
+
 .terraform.lock.hcl
 .terraform/
 terraform.tfstate
 terraform.tfstate.backup
+sso_credentials.json
 
 __pycache__/
 hangman_words.cpython-311.pyc
@@ -11,6 +14,7 @@ resume-css/
 
 old-config.py
 entry-points.py
+.dockerignore
 
 app local/
 

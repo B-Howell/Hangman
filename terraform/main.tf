@@ -1,8 +1,10 @@
 terraform {
+  required_version = ">= 0.13"
+
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 4.0"
+      version = ">= 4.0.0, < 5.0.0"
     }
   }
   backend "s3" {
@@ -23,8 +25,13 @@ provider "aws" {
 # -- ACM Certificate for my API Gateway Custom Domain ------------------------#
 # -- ECR private repo with my app container ----------------------------------#
 
-data "aws_api_gateway_domain_name" "domain" {
-  domain_name = var.domain-name
+data "aws_api_gateway_domain_name" "api-domain" {
+  domain_name = var.api-domain-name
+}
+
+data "aws_acm_certificate" "cert" {
+  domain = "hangman-alb.brettmhowell.com"
+  statuses = ["ISSUED"]
 }
 
 #----------------------------------------------------------#
@@ -59,8 +66,7 @@ resource "aws_internet_gateway" "internet_gateway" {
 
 #---------------------Public-Subnets-----------------------#
 # Creates public subnets with a route to the internet      #
-# gateway. These subnets wont be used in this configuration#
-# But could be of use in the future -----------------------#
+# gateway. These subnets will host my ECS Fargate Cluster. #
 #----------------------------------------------------------#
 
 resource "aws_subnet" "public_1" {
@@ -157,58 +163,27 @@ resource "aws_route_table_association" "private_rt_2" {
 #- configuration to communicate properly -----------------#
 #---------------------------------------------------------#
 
-#---------------------VPC-Link-SG-------------------------#
-#- Any Traffic -> VPC Link -------------------------------#
-#- VPC Link    -> Application Load Balancer (HTTP) -------#
-#- VPC Link    -> Application Load Balancer (HTTPS) ------#
-#---------------------------------------------------------#
-
-resource "aws_security_group" "vpc-link-sg" {
-  name        = "vpc-link-sg-tf"
-  description = "Security group for the VPC-Link"
-  vpc_id      = aws_vpc.vpc.id
-}
-
-resource "aws_security_group_rule" "ingress-from-internet" {
-  security_group_id = aws_security_group.vpc-link-sg.id
-  type              = "ingress"
-  from_port         = 0
-  to_port           = 0
-  protocol          = "-1"
-  cidr_blocks       = ["0.0.0.0/0"]
-  description = "Any Traffic to VPC Link"
-}
-
-resource "aws_security_group_rule" "egress-to-alb-http" {
-  security_group_id        = aws_security_group.vpc-link-sg.id
-  type                     = "egress"
-  from_port                = 80
-  to_port                  = 80
-  protocol                 = "tcp"
-  source_security_group_id = aws_security_group.alb-sg.id
-  description = "VPC Link to Application Load Balancer (HTTP)"
-}
-
-resource "aws_security_group_rule" "egress-to-alb-https" {
-  security_group_id        = aws_security_group.vpc-link-sg.id
-  type                     = "egress"
-  from_port                = 443
-  to_port                  = 443
-  protocol                 = "tcp"
-  source_security_group_id = aws_security_group.alb-sg.id
-  description = "VPC Link to Application Load Balancer (HTTPS)"
-}
-
 #-------------Application-Load-Balancer-SG----------------#
-#- Local    -> ALB ---------------------------------------#
-#- VPC Link -> ALB ---------------------------------------#
-#- ALB      -> Elastic Container Service -----------------#
+#- Any Traffic -> ALB ------------------------------------#
+#- Local       -> ALB ------------------------------------#
+#- VPC Link    -> ALB ------------------------------------#
+#- ALB         -> Elastic Container Service --------------#
 #---------------------------------------------------------#
 
 resource "aws_security_group" "alb-sg" {
   name        = "alb-sg-tf"
   description = "Security group for the Application Load Balancer"
   vpc_id      = aws_vpc.vpc.id
+}
+
+resource "aws_security_group_rule" "alb-ingress-from-internet" {
+  security_group_id = aws_security_group.alb-sg.id
+  type              = "ingress"
+  from_port         = 443
+  to_port           = 443
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  description = "Any Traffic to ALB"
 }
 
 resource "aws_security_group_rule" "ingress-from-vpc" {
@@ -219,16 +194,6 @@ resource "aws_security_group_rule" "ingress-from-vpc" {
   protocol          = "-1"
   cidr_blocks       = ["10.16.0.0/23"]
   description = "Local to ALB"
-}
-
-resource "aws_security_group_rule" "ingress-from-vpc-link" {
-  security_group_id        = aws_security_group.alb-sg.id
-  type                     = "ingress"
-  from_port                = 0
-  to_port                  = 0
-  protocol                 = "-1"
-  source_security_group_id = aws_security_group.vpc-link-sg.id
-  description = "VPC Link to ALB"
 }
 
 resource "aws_security_group_rule" "egress-to-ecs" {
@@ -242,12 +207,11 @@ resource "aws_security_group_rule" "egress-to-ecs" {
 }
 
 #--------------Elastic-Container-Service-SG---------------#
-#- ALB           -> ECS ----------------------------------#
-#- VPC Endpoints -> ECS ----------------------------------#
-#- ECS           -> ECS ----------------------------------#
-#- ECS           -> ALB ----------------------------------#
-#- ECS           -> VPC Endpoints ------------------------#
-#- ECS           -> Anywhere -----------------------------#
+#- ALB -> ECS --------------------------------------------#
+#- ECS -> ECS --------------------------------------------#
+#- ECS -> ALB --------------------------------------------#
+#- ECS -> RDS --------------------------------------------#
+#- ECS -> Anywhere ---------------------------------------#
 #---------------------------------------------------------#
 
 resource "aws_security_group" "ecs-sg" {
@@ -266,17 +230,7 @@ resource "aws_security_group_rule" "ingress-from-alb" {
   description = "ALB to ECS"
 }
 
-resource "aws_security_group_rule" "ingress-from-vpc-endpoints" {
-  security_group_id        = aws_security_group.ecs-sg.id
-  type                     = "ingress"
-  from_port                = 0
-  to_port                  = 0
-  protocol                 = "-1"
-  source_security_group_id = aws_security_group.vpc-endpoint-sg.id
-  description = "VPC Endpoints to ECS"
-}
-
-resource "aws_security_group_rule" "ingress-from-ecs" {
+resource "aws_security_group_rule" "ecs-ecs" {
   security_group_id        = aws_security_group.ecs-sg.id
   type                     = "ingress"
   from_port                = 0
@@ -286,7 +240,7 @@ resource "aws_security_group_rule" "ingress-from-ecs" {
   description = "ECS to ECS"
 }
 
-resource "aws_security_group_rule" "egress-to-alb" {
+resource "aws_security_group_rule" "ecs-egress-to-alb" {
   security_group_id        = aws_security_group.ecs-sg.id
   type                     = "egress"
   from_port                = 0
@@ -296,14 +250,14 @@ resource "aws_security_group_rule" "egress-to-alb" {
   description = "ECS to ALB"
 }
 
-resource "aws_security_group_rule" "egress-to-vpc-endpoints" {
+resource "aws_security_group_rule" "egress-to-rds" {
   security_group_id        = aws_security_group.ecs-sg.id
   type                     = "egress"
-  from_port                = 0
-  to_port                  = 0
-  protocol                 = "-1"
-  source_security_group_id = aws_security_group.vpc-endpoint-sg.id
-  description = "ECS to VPC Endpoints"
+  from_port                = 3306
+  to_port                  = 3306
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.rds-sg.id
+  description              = "ECS to RDS (MySQL)"
 }
 
 resource "aws_security_group_rule" "egress-to-anywhere" {
@@ -316,110 +270,52 @@ resource "aws_security_group_rule" "egress-to-anywhere" {
   description = "ECS to Anywhere"
 }
 
-#--------------------VPC-Endpoint-SG----------------------#
-#- Local            -> VPC Endpoints ---------------------#
-#- VPC Endpoints    -> Local -----------------------------#
-#---------------------------------------------------------#
+#------------------------RDS-SG--------------------------#
+#- ECS -> RDS (MySQL) -----------------------------------#
+#--------------------------------------------------------#
 
-resource "aws_security_group" "vpc-endpoint-sg" {
-  name        = "vpc-endpoint-sg-tf"
-  description = "Security group for the VPC Endpoints"
+resource "aws_security_group" "rds-sg" {
+  name        = "rds-sg-tf"
+  description = "Security group for the RDS Instance"
   vpc_id      = aws_vpc.vpc.id
 }
 
-resource "aws_security_group_rule" "ingress-local" {
-  security_group_id = aws_security_group.vpc-endpoint-sg.id
-  type              = "ingress"
-  from_port         = "0"
-  to_port           = "0"
-  protocol          = "-1"
-  cidr_blocks       = ["10.16.0.0/23"]
-  description = "Local to VPC Endpoints"
+resource "aws_security_group_rule" "ingress-from-ecs" {
+  security_group_id        = aws_security_group.rds-sg.id
+  type                     = "ingress"
+  from_port                = 3306
+  to_port                  = 3306
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.ecs-sg.id
+  description              = "ECS to RDS (MySQL)"
 }
 
-resource "aws_security_group_rule" "egress-local" {
-  security_group_id = aws_security_group.vpc-endpoint-sg.id
-  type              = "egress"
-  from_port         = "0"
-  to_port           = "0"
-  protocol          = "-1"
-  cidr_blocks       = ["10.16.0.0/23"]
-  description = "VPC Endpoints to Local"
+#----------------------------RDS---------------------------#
+
+resource "aws_db_instance" "mysql_db" {
+  allocated_storage    = 5
+  engine               = "mysql"
+  engine_version       = "5.7"
+  instance_class       = "db.t2.micro"
+  db_name              = var.db_name
+  username             = var.db_username
+  password             = var.db_password
+  parameter_group_name = "default.mysql5.7"
+  publicly_accessible  = false
+  skip_final_snapshot  = true
+  multi_az             = true
+  db_subnet_group_name = aws_db_subnet_group.db_subnet_group.name
+  vpc_security_group_ids = [aws_security_group.rds-sg.id]
 }
 
-#---------------------VPC-Endpoints------------------------#
-# This creates 4 different VPC Endpoints for each of my ---#
-# private subnets (3 Interface, 1 Gateway): ---------------#
-# - com.amazonaws.us-east-1.ecr.dkr (IF)-------------------#
-# - com.amazonaws.us-east-1.ecr.api (IF)-------------------#
-# - com.amazonaws.us-east-1.s3 (GW)------------------------#
-# - com.amazonaws.us-east-1.logs (IF)----------------------#
-# ---------------------------------------------------------#
-
-resource "aws_vpc_endpoint" "interface_endpoint_ecs_dkr" {
-  vpc_id             = aws_vpc.vpc.id
-  service_name       = "com.amazonaws.${var.region}.ecr.dkr"
-  vpc_endpoint_type  = "Interface"
-  security_group_ids = [aws_security_group.vpc-endpoint-sg.id]
-  subnet_ids         = [aws_subnet.private_1.id, aws_subnet.private_2.id]
-  ip_address_type = "ipv4"
-  private_dns_enabled = true
-
-  dns_options {
-    dns_record_ip_type = "ipv4"
-  }
+resource "aws_db_subnet_group" "db_subnet_group" {
+  name       = "hangman"
+  subnet_ids = [aws_subnet.private_1.id, aws_subnet.private_2.id]
 
   tags = {
-    Name = "Connect-ECS-DKR"
+    Name = "Hangman DB subnet group"
   }
 }
-
-resource "aws_vpc_endpoint" "interface_endpoint_ecs_api" {
-  vpc_id             = aws_vpc.vpc.id
-  service_name       = "com.amazonaws.${var.region}.ecr.api"
-  vpc_endpoint_type  = "Interface"
-  security_group_ids = [aws_security_group.vpc-endpoint-sg.id]
-  subnet_ids         = [aws_subnet.private_1.id, aws_subnet.private_2.id]
-  ip_address_type = "ipv4"
-  private_dns_enabled = true
-
-  dns_options {
-    dns_record_ip_type = "ipv4"
-  }
-
-  tags = {
-    Name = "Connect-ECS-API"
-  }
-}
-
-resource "aws_vpc_endpoint" "interface_endpoint_cw_logs" {
-  vpc_id             = aws_vpc.vpc.id
-  service_name       = "com.amazonaws.${var.region}.logs"
-  vpc_endpoint_type  = "Interface"
-  security_group_ids = [aws_security_group.vpc-endpoint-sg.id]
-  subnet_ids         = [aws_subnet.private_1.id, aws_subnet.private_2.id]
-  ip_address_type = "ipv4"
-  private_dns_enabled = true
-
-  dns_options {
-    dns_record_ip_type = "ipv4"
-  }
-
-  tags = {
-    Name = "Connect-Cloudwatch-Logs"
-  }
-}
-
-resource "aws_vpc_endpoint" "gateway_endpoint_s3" {
-  vpc_id            = aws_vpc.vpc.id
-  service_name      = "com.amazonaws.${var.region}.s3"
-  vpc_endpoint_type = "Gateway"
-  route_table_ids = [aws_route_table.private.id]
-  tags = {
-    Name = "Connect-S3"
-  }
-}
-
 
 #----------------Application-Load-Balancer-----------------#
 # Creates the Target Group that will point towards the ECS #
@@ -433,27 +329,41 @@ resource "aws_lb_target_group" "target-group" {
   protocol    = "HTTP"
   target_type = "ip"
   vpc_id      = aws_vpc.vpc.id
+
+  health_check {
+    enabled             = true
+    interval            = 30
+    path                = "/health"
+    protocol            = "HTTP"
+    healthy_threshold   = 3
+    unhealthy_threshold = 3
+    timeout             = 5
+    matcher             = "200"
+  }
 }
 
 resource "aws_lb" "alb" {
   name               = var.alb-name
-  internal           = true
+  internal           = false
   load_balancer_type = "application"
 
-  subnets         = [aws_subnet.private_1.id, aws_subnet.private_2.id]
+  subnets         = [aws_subnet.public_1.id, aws_subnet.public_2.id]
   security_groups = [aws_security_group.alb-sg.id]
 }
 
-resource "aws_lb_listener" "http_listener" {
+resource "aws_lb_listener" "https_listener" {
   load_balancer_arn = aws_lb.alb.arn
-  port              = 80
-  protocol          = "HTTP"
+  port              = 443
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06"
+  certificate_arn   = data.aws_acm_certificate.cert.arn
 
   default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.target-group.arn
   }
 }
+
 
 #-----------------Elastic-Container-Service-----------------#
 #- Creates an ECS Cluster for the app to run in aswell as:  #
@@ -467,6 +377,21 @@ resource "aws_lb_listener" "http_listener" {
 
 resource "aws_ecs_cluster" "cluster" {
   name = "Hangman-Cluster"
+
+  setting {
+    name  = "containerInsights"
+    value = "enabled"
+  }
+}
+
+resource "aws_cloudwatch_log_group" "log_group" {
+  name = "hangman-log-group"
+  retention_in_days = 7
+}
+
+resource "aws_cloudwatch_log_stream" "log_stream" {
+  name           = "hangman-log-stream"
+  log_group_name = aws_cloudwatch_log_group.log_group.name
 }
 
 resource "aws_ecs_task_definition" "task_definition" {
@@ -475,24 +400,65 @@ resource "aws_ecs_task_definition" "task_definition" {
   requires_compatibilities = ["FARGATE"]
   task_role_arn            = var.execution-role-arn
   execution_role_arn       = var.execution-role-arn
-  cpu                      = 256
-  memory                   = 512
+  cpu                      = 512
+  memory                   = 1024
 
-  container_definitions = jsonencode([
+  container_definitions = <<DEFINITION
+  [
     {
-      name          = "hangman"
-      image         = "185666942958.dkr.ecr.us-east-1.amazonaws.com/hangman:v7"
-      essential     = true
-      portMappings = [
+      "name": "${var.container-name}",
+      "image": "${var.container-uri}",
+      "essential": true,
+      "portMappings": [
         {
-          containerPort = 5000
-          hostPort      = 5000
-          protocol      = "tcp"
-          appProtocol   = "http"
+          "protocol": "tcp",
+          "appProtocol": "http",
+          "containerPort": ${var.container-port},
+          "hostPort": ${var.container-port}
         }
-      ]
+      ],
+      "environment": [
+        {
+          "name": "MYSQL_HOST",
+          "value": "${aws_db_instance.mysql_db.address}"
+        },
+        {
+          "name": "MYSQL_USER",
+          "value": "${aws_db_instance.mysql_db.username}"
+        },
+        {
+          "name": "MYSQL_PASSWORD",
+          "value": "${aws_db_instance.mysql_db.password}"
+        },
+        {
+          "name": "MYSQL_DB",
+          "value": "${aws_db_instance.mysql_db.db_name}"
+        },
+        {
+          "name": "SECRET_KEY",
+          "value": "${var.db_secret_key}"
+        }
+      ],
+
+      "healthCheck": {
+        "command": ["CMD-SHELL", "curl -f http://localhost:${var.container-port}/health || exit 1"],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 0
+      },
+
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "${aws_cloudwatch_log_group.log_group.name}",
+          "awslogs-region": "${var.region}",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
     }
-])
+  ]
+  DEFINITION
 }
 
 resource "aws_ecs_service" "service" {
@@ -500,6 +466,7 @@ resource "aws_ecs_service" "service" {
   cluster = aws_ecs_cluster.cluster.id
   task_definition = aws_ecs_task_definition.task_definition.id
   desired_count = 1
+  launch_type = "FARGATE"
   
   deployment_circuit_breaker {
     enable = true
@@ -508,7 +475,8 @@ resource "aws_ecs_service" "service" {
 
   network_configuration {
     security_groups = [aws_security_group.ecs-sg.id]
-    subnets = [aws_subnet.private_1.id, aws_subnet.private_2.id]
+    subnets = [aws_subnet.public_1.id, aws_subnet.public_2.id]
+    assign_public_ip = true
   }
 
   load_balancer {
@@ -542,53 +510,4 @@ resource "aws_appautoscaling_policy" "auto_scaling_policy" {
     scale_out_cooldown = 60
   }
 }
-
-#-----------------------API-Gateway------------------------#
-#- Creates an HTTP API Gateway that links to the listener -#
-#- on the ALB in the ECS Fargate Cluster and uses the -----#
-#- custom domain name hangman-api.brettmhowell.com to -----#
-#- connect to my website. ---------------------------------#
-#----------------------------------------------------------#
-
-resource "aws_apigatewayv2_vpc_link" "vpc-link" {
-  name               = "hangman-vpc-link"
-  security_group_ids = [aws_security_group.vpc-link-sg.id]
-  subnet_ids         = [aws_subnet.private_1.id, aws_subnet.private_2.id]
-}
-
-resource "aws_apigatewayv2_api" "http-api-gateway" {
-  name          = "hangman"
-  protocol_type = "HTTP"
-  api_key_selection_expression = "$request.header.x-api-key"
-
-}
-
-resource "aws_apigatewayv2_stage" "stage" {
-  api_id = aws_apigatewayv2_api.http-api-gateway.id
-  name   = "$default"
-  auto_deploy = true
-}
-
-resource "aws_apigatewayv2_integration" "integration" {
-  api_id = aws_apigatewayv2_api.http-api-gateway.id
-  integration_uri = aws_lb_listener.http_listener.arn
-  integration_type = "HTTP_PROXY"
-  integration_method = "ANY"
-  connection_type = "VPC_LINK"
-  connection_id = aws_apigatewayv2_vpc_link.vpc-link.id
-}
-
-resource "aws_apigatewayv2_route" "route" {
-  api_id    = aws_apigatewayv2_api.http-api-gateway.id
-  route_key = "ANY /{proxy+}"
-  target = "integrations/${aws_apigatewayv2_integration.integration.id}"
-}
-
-resource "aws_apigatewayv2_api_mapping" "mapping" {
-  api_id      = aws_apigatewayv2_api.http-api-gateway.id
-  domain_name = var.domain-name
-  stage       = aws_apigatewayv2_stage.stage.id
-}
-
-#-------------------------Cognito---------------------------#
 

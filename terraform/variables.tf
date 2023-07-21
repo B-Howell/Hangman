@@ -1,20 +1,27 @@
-variable "domain-name" {
+variable "api-domain-name" {
   default = "hangman-api.brettmhowell.com"
+}
+
+variable "alb-domain-name" {
+  default = "hangman-alb.brettmhowell.com"
 }
 
 variable "region" {
   default = "us-east-1"
 }
 
+
+
 variable "container-name" {
   default = "hangman"
 }
+
 variable "container-port" {
   default = 5000
 }
 
 variable "container-uri" {
-  default = "185666942958.dkr.ecr.us-east-1.amazonaws.com/hangman:v5"
+  default = "185666942958.dkr.ecr.us-east-1.amazonaws.com/hangman:v8.7"
 }
 
 variable "tg-name" {
@@ -30,5 +37,5 @@ variable "execution-role-arn" {
 }
 
 variable "service-name" {
-  default = "Hangman"
+  default = "hangman-service"
 }
