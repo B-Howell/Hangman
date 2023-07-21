@@ -5,6 +5,7 @@ from auth import auth
 import random
 import hangman_words
 import MySQLdb.cursors
+import logging
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -16,6 +17,62 @@ class User:
         self.id = id
         self.username = username
         self.password = password
+
+def test_db_connection():
+    cursor = None
+    try:
+        cursor = mysql.connection.cursor()  # Get a cursor
+        cursor.execute("SELECT 1")  # Perform a simple operation on the database
+        logging.info('Successfully connected to the database.')
+    except Exception as e:
+        logging.error('An error occurred while connecting to the database: %s', e)
+    finally:
+        if cursor is not None:
+            cursor.close()
+
+def create_tables():
+    conn = mysql.connection
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            user_id INT AUTO_INCREMENT PRIMARY KEY,
+            username VARCHAR(100),
+            provider VARCHAR(100),
+            password VARCHAR(255)
+        )
+        """)
+
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS stats (
+            user_id INT,
+            wins INT,
+            losses INT,
+            win_loss_ratio FLOAT,
+            current_win_streak INT,
+            longest_win_streak INT,
+            FOREIGN KEY (user_id) REFERENCES users(user_id)
+        )
+        """)
+
+        conn.commit()
+        logging.info('Successfully connected to the database and created tables if they did not exist')
+
+    except Exception as e:
+        logging.error('An error occurred while connecting to the database: %s', e)
+
+    finally:
+        cursor.close()
+
+@app.before_first_request
+def before_first_request():
+    test_db_connection()
+    create_tables()
+
+@app.route('/health')
+def health_check():
+    return 'OK', 200
 
 @app.route('/', methods=['GET', 'POST'])
 def base():
@@ -212,5 +269,11 @@ def lose():
     return redirect(url_for('category'))
 
 if __name__ == '__main__':
+    import logging
+    logging.basicConfig(level=logging.INFO)
+    with app.app_context(): 
+        test_db_connection() 
     app.run(debug=True, host='0.0.0.0')
+
+
 
