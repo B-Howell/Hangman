@@ -1,75 +1,120 @@
+import boto3
+from botocore.exceptions import BotoCoreError, ClientError
 from flask import Blueprint, request, session, redirect, url_for, jsonify
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask_mysqldb import MySQL
-import MySQLdb.cursors
+from config import Config
 
 auth = Blueprint('auth', __name__)
 
-def handle_login(cur):
-    username = request.form.get('username')
-    password = request.form.get('password')
-    
-    cur.execute("SELECT * FROM users WHERE username = %s", (username,))
-    user = cur.fetchone()
+session = boto3.Session(profile_name='terraform') 
+cognito = session.client('cognito-idp', region_name='us-east-1')
 
-    if user:
-        if check_password_hash(user['password'], password):
-            session['user_id'] = user['user_id']
-            session['username'] = username
-            return None
-        else:
-            return "Incorrect password"
-    else:
-        return "Username does not exist"
-
-@auth.route('/login', methods=['POST'])
-def login():
-    mysql = MySQL()
-    conn = mysql.connection
-    cur = conn.cursor(MySQLdb.cursors.DictCursor)
-    error = handle_login(cur)
-    cur.close()
-    if error:
-        return jsonify({'error': error})
-    else:
-        return redirect(request.referrer or url_for('base'))
-
-def handle_register(cur, conn):
+def handle_register():
     username = request.form.get('new_username')
-    cur.execute("SELECT * FROM users WHERE username = %s", (username,))
-    existing_user = cur.fetchone()
+    email = request.form.get('new_email')
+    password = request.form.get('new_password')
 
-    if existing_user:
-        return 'Username already taken. Please choose another.'
-    else:
-        password = request.form.get('new_password')
-        if len(password) < 8:  # Password should be at least 8 characters
-            return 'Password is not long enough. It must be at least 8 characters.'
-        elif len(password) > 25:  # Password should not exceed 25 characters
-            return 'Password is too long. It must not exceed 25 characters.'
+    if not username or not email or not password:
+        return 'Username, email, and password are required.'
+    if '@' not in email:
+        return 'Invalid email address.'
 
-        password = generate_password_hash(password)
-        cur.execute("INSERT INTO users (user_id, username, password, provider) VALUES (%s, %s, %s, %s)", (None, username, password, 'manual'))
-        conn.commit()
-        user_id = cur.lastrowid
-        cur.execute("INSERT INTO stats (user_id, wins, losses, win_loss_ratio, current_win_streak, longest_win_streak) VALUES (%s, 0, 0, 0.0, 0, 0)", (user_id,))
-        conn.commit()
-        session['user_id'] = user_id
-        return None
+    try:
+        response = cognito.sign_up(
+            ClientId=Config.CLIENT_ID,
+            Username=username,
+            Password=password,
+            UserAttributes=[
+                {
+                    'Name': 'email',
+                    'Value': email
+                },
+                {
+                    'Name': 'preferred_username',
+                    'Value': username
+                },
+            ]
+        )
+    except ClientError as e:
+        # Error handling
+        error_message = e.response['Error']['Message']
+        if 'UsernameExistsException' in error_message:
+            return 'An account with this username already exists.'
+        else:
+            return 'An error occurred: ' + error_message
+
+    session['username'] = username
+    session['user'] = response['User']
+    return None
 
 @auth.route('/register', methods=['POST'])
 def register():
-    mysql = MySQL()
-    conn = mysql.connection
-    cur = conn.cursor(MySQLdb.cursors.DictCursor)
-    error = handle_register(cur, conn)
-    cur.close()
+    error = handle_register()
     if error:
         return jsonify({'error': error})
     else:
         return redirect(request.referrer or url_for('base'))
 
-@auth.route('/logout')
-def logout():
-    session.clear()
-    return redirect(url_for('base'))
+def handle_login():
+    username_or_email = request.form.get('username')
+    password = request.form.get('password')
+
+    # Basic input validation
+    if not username_or_email or not password:
+        return 'Username/email and password are required.'
+
+    try:
+        response = cognito.initiate_auth(
+            AuthFlow='USER_PASSWORD_AUTH',
+            AuthParameters={
+                'USERNAME': username_or_email,
+                'PASSWORD': password,
+            },
+            ClientId=Config.CLIENT_ID
+        )
+    except ClientError as e:
+        # Error handling
+        error_message = e.response['Error']['Message']
+        if 'UserNotFoundException' in error_message:
+            return 'Username/email does not exist.'
+        elif 'NotAuthorizedException' in error_message:
+            return 'Incorrect password. Try again.'
+        else:
+            return 'An error occurred: ' + error_message
+
+    session['username'] = username_or_email
+    session['tokens'] = response['AuthenticationResult']
+    return None
+
+
+@auth.route('/login', methods=['POST'])
+def login():
+    error = handle_login()
+    if error:
+        return jsonify({'error': error})
+    else:
+        return redirect(request.referrer or url_for('base'))
+
+@auth.route('/forgot-password', methods=['POST'])
+def forgot_password():
+    username_or_email = request.form.get('username')
+
+    # Basic input validation
+    if not username_or_email:
+        return jsonify({'error': 'Username/email is required.'}), 400
+
+    try:
+        response = cognito.forgot_password(
+            ClientId=Config.CLIENT_ID,
+            Username=username_or_email
+        )
+    except ClientError as e:
+        # Error handling
+        error_message = e.response['Error']['Message']
+        if 'UserNotFoundException' in error_message:
+            return jsonify({'error': 'Username/email does not exist.'}), 400
+        else:
+            return jsonify({'error': 'An error occurred: ' + error_message}), 400
+
+    # If the request was successful, return a success message
+    return jsonify({'message': 'Password reset code sent to email.'}), 200
+

@@ -109,35 +109,58 @@
                     {% endwith %}
 
                 
-                    <div id="loginModal" class="login-popup-overlay" style="display: none;">
-                        <div class="login-popup">
-                            <div class="login-section">
-                                <span class="close">&times;</span>
-                                <h2>Login</h2>
-                                <p>Please enter your username and password to continue.</p>
-                                <div id="login-error" style="color: red;"></div>
-                                <form method="POST" action="{{ url_for('auth.login') }}">
-                                    <input type="text" name="username" placeholder="Username">
-                                    <input type="password" name="password" placeholder="Password">
-                                    <button type="submit" name="login">Login</button>
-                                </form>
-                            </div>
+                    <!-- Register Modal -->
+                    <div id="registerModal" class="modal">
+                        <div class="modal-content">
+                            <span class="close">&times;</span>
+                            <form action="{{ url_for('auth.register') }}" method="post">
+                                <label for="username"><b>Username</b></label>
+                                <input type="text" placeholder="Enter Username" name="username" required>
+
+                                <!-- Added Email Field -->
+                                <label for="email"><b>Email</b></label>
+                                <input type="email" placeholder="Enter Email" name="email" required>
+
+                                <label for="password"><b>Password</b></label>
+                                <input type="password" placeholder="Enter Password" name="password" required>
+
+                                <button type="submit">Register</button>
+                            </form>
                         </div>
                     </div>
-                    
-                    <div id="registerModal" class="login-popup-overlay" style="display: none;">
-                        <div class="login-popup">
-                            <div class="register-section">
-                                <span class="close">&times;</span>
-                                <h2>Register</h2>
-                                <p>Create a username and password to play.</p>
-                                <div id="register-error" style="color: red;"></div>
-                                <form method="POST" action="{{ url_for('auth.register') }}">
-                                    <input type="text" name="new_username" placeholder="Username">
-                                    <input type="password" name="new_password" placeholder="Password">
-                                    <button type="submit" name="register">Register</button>
-                                </form>
-                            </div>
+
+                    <!-- Login Modal -->
+                    <div id="loginModal" class="modal">
+                        <div class="modal-content">
+                            <span class="close">&times;</span>
+                            <form action="{{ url_for('auth.login') }}" method="post">
+                                <label for="username"><b>Username or Email</b></label>
+                                <input type="text" placeholder="Enter Username or Email" name="username_or_email" required>
+
+                                <label for="password"><b>Password</b></label>
+                                <input type="password" placeholder="Enter Password" name="password" required>
+
+                                <!-- Added Forgot Password Button -->
+                                <button type="button" id="forgotPasswordButton">I forgot my password</button>
+
+                                <button type="submit">Login</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Password Reset Modal -->
+                    <div id="passwordResetModal" class="modal">
+                        <div class="modal-content">
+                            <span class="close">&times;</span>
+                            <form action="{{ url_for('auth.reset_password') }}" method="post">
+                                <label for="code"><b>Verification Code</b></label>
+                                <input type="text" placeholder="Enter Verification Code" name="code" required>
+
+                                <label for="new_password"><b>New Password</b></label>
+                                <input type="password" placeholder="Enter New Password" name="new_password" required>
+
+                                <button type="submit">Reset Password</button>
+                            </form>
                         </div>
                     </div>
                     
@@ -245,6 +268,23 @@
                     modal.style.display = "none";
                     }
 
+                    // Get the password reset modal
+                    var passwordResetModal = document.getElementById('passwordResetModal');
+
+                    // Get the button that opens the password reset modal
+                    var forgotPasswordButton = document.getElementById('forgotPasswordButton');
+
+                    // When the user clicks the "I forgot my password" button, open the password reset modal
+                    forgotPasswordButton.onclick = function() {
+                        passwordResetModal.style.display = "block";
+                    }
+
+                    // When the user clicks anywhere outside of the password reset modal, close it
+                    window.onclick = function(event) {
+                        if (event.target == passwordResetModal) {
+                            passwordResetModal.style.display = "none";
+                        }
+                    }
                 </script>
 
                     {% else %}

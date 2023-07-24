@@ -10,7 +10,21 @@ variable "region" {
   default = "us-east-1"
 }
 
+variable "db_name" {
+  default = "Hangman"
+}
 
+variable "db_username" {
+  default = "root"
+}
+
+variable "db_password" {
+  default = "Bh_661399!"
+}
+
+variable "db_secret_key" {
+  default = "p14y-h4ngm4n!"
+}
 
 variable "container-name" {
   default = "hangman"

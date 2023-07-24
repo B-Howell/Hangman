@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 from flask_mysqldb import MySQL
 from config import Config
-from auth import auth
+import auth
 import random
 import hangman_words
 import MySQLdb.cursors

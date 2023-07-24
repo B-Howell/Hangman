@@ -399,8 +399,8 @@ resource "aws_ecs_task_definition" "task_definition" {
   requires_compatibilities = ["FARGATE"]
   task_role_arn            = var.execution-role-arn
   execution_role_arn       = var.execution-role-arn
-  cpu                      = 512
-  memory                   = 1024
+  cpu                      = 256
+  memory                   = 512
 
   container_definitions = <<DEFINITION
   [
@@ -436,6 +436,14 @@ resource "aws_ecs_task_definition" "task_definition" {
         {
           "name": "SECRET_KEY",
           "value": "${var.db_secret_key}"
+        },
+        {
+          "name": "USER_POOL_ID",
+          "value": "${aws_cognito_user_pool.main.id}"
+        },
+        {
+          "name": "CLIENT_ID",
+          "value": "${aws_cognito_user_pool_client.client.id}"
         }
       ],
 
@@ -604,5 +612,5 @@ resource "aws_cognito_user_pool_client" "client" {
     "ALLOW_REFRESH_TOKEN_AUTH"
   ]
 
-  generate_secret = true
+  generate_secret = false
 }
