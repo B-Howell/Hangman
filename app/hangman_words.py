@@ -29,7 +29,8 @@ countries = [
     'SOUTH KOREA',
     'COSTA RICA',
     'DOMINICAN REPUBLIC',
-    'SRI LANKA'
+    'SRI LANKA',
+    'FRANCE'
 ]
 
 animals = [
