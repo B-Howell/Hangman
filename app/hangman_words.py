@@ -326,6 +326,7 @@ books = [
     'OF MICE AND MEN',
     'GONE WITH THE WIND',
     'A TALE OF TWO CITIES',
+    'MOBY DICK'
 ]
 
 tv_shows = [
