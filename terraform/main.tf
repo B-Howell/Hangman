@@ -21,6 +21,14 @@ provider "aws" {
   profile = "terraform"
 }
 
+# Variables passed into Terraform from GitHub Secrets #
+
+variable "db-name" {}
+variable "db-username" {}
+variable "db-password" {}
+variable "app-secret-key" {}
+variable "docker_image" {}
+
 # Resources created in AWS Console before using this Terraform Configuration: #
 # -- ACM Certificate for my API Gateway Custom Domain ------------------------#
 # -- ECR private repo with my app container ----------------------------------#
@@ -290,16 +298,19 @@ resource "aws_security_group_rule" "ingress-from-ecs" {
   description              = "ECS to RDS (MySQL)"
 }
 
-#----------------------------RDS---------------------------#
+#----------------------------RDS----------------------------#
+#- Creates the MySQL Database that ECS Fargate will connect-#
+#- to on port 3306 -----------------------------------------#
+#-----------------------------------------------------------#
 
 resource "aws_db_instance" "mysql_db" {
   allocated_storage    = 5
   engine               = "mysql"
   engine_version       = "5.7"
   instance_class       = "db.t2.micro"
-  db_name              = var.db_name
-  username             = var.db_username
-  password             = var.db_password
+  db_name              = var.db-name
+  username             = var.db-username
+  password             = var.db-password
   parameter_group_name = "default.mysql5.7"
   publicly_accessible  = false
   skip_final_snapshot  = true
@@ -400,14 +411,14 @@ resource "aws_ecs_task_definition" "task_definition" {
   requires_compatibilities = ["FARGATE"]
   task_role_arn            = var.execution-role-arn
   execution_role_arn       = var.execution-role-arn
-  cpu                      = 512
-  memory                   = 1024
+  cpu                      = 256
+  memory                   = 512
 
   container_definitions = <<DEFINITION
   [
     {
       "name": "${var.container-name}",
-      "image": "${var.container-uri}",
+      "image": "${var.docker_image}",
       "essential": true,
       "portMappings": [
         {
@@ -436,7 +447,7 @@ resource "aws_ecs_task_definition" "task_definition" {
         },
         {
           "name": "SECRET_KEY",
-          "value": "${var.db_secret_key}"
+          "value": "${var.app-secret-key}"
         }
       ],
 

@@ -43,7 +43,6 @@ animals = [
     'LEOPARD',
     'CHEETAH',
     'HYENA',
-    'HIPPOPOTAMUS',
     'PORCUPINE',
     'RACCOON',
     'SQUIRREL',
@@ -108,15 +107,15 @@ sports = [
     'HOCKEY',
     'JUDO',
     'KARATE',
+    'LACROSSE',
     'ROWING',
     'SAILING',
-    'SKATEBOARDING',
     'SKIING',
+    'SURFING',
     'SWIMMING',
     'TENNIS',
     'VOLLEYBALL',
     'WRESTLING',
-    'SNOWBOARDING',
     'SURFING',
     'BASEBALL',
     'RUGBY',
@@ -124,8 +123,7 @@ sports = [
     'GYMNASTICS',
     'TABLE TENNIS',
     'TRACK AND FIELD',
-    'WEIGHTLIFTING',
-    'WATER POLO'
+    'WATER POLO',
 ]
 
 professions = [
@@ -146,19 +144,21 @@ professions = [
     'SCIENTIST',
     'SURGEON',
     'TEACHER',
-    'VETERINARIAN',
     'ZOOLOGIST',
-    'PSYCHOLOGIST',
     'SOFTWARE ENGINEER',
     'GRAPHIC DESIGNER',
     'MARKETING MANAGER',
-    'PHOTOGRAPHER',
     'ARCHITECT',
     'LAWYER',
     'ACCOUNTANT',
     'SOCIAL WORKER',
     'CHEMIST',
-    'POLICE OFFICER'
+    'POLICE OFFICER',
+    'PLUMBER',
+    'CARPENTER',
+    'PROFESSOR',
+    'ARCHITECT',
+    'TECHNICIAN'
 ]
 
 instruments = [
@@ -228,6 +228,7 @@ brands = [
 ]
 
 cities = [
+    'ATLANTA',
     'PHOENIX',
     'CHICAGO',
     'SEATTLE',
@@ -238,7 +239,6 @@ cities = [
     'BERLIN',
     'TOKYO',
     'SYDNEY',
-    'PHILADELPHIA',
     'SINGAPORE',
     'ISTANBUL',
     'MOSCOW',
@@ -247,7 +247,6 @@ cities = [
     'BEIJING',
     'MUMBAI',
     'HOUSTON',
-    'JOHANNESBURG',
     'NEW YORK',
     'LOS ANGELES',
     'ROME',
@@ -260,6 +259,13 @@ cities = [
     'ATHENS',
     'HOUSTON',
     'KANSAS CITY',
+    'BALTIMORE',
+    'MIAMI',
+    'LAS VEGAS',
+    'SHANGHAI',
+    'BANGKOK',
+    'BARCELONA',
+    'PRAGUE'
 ]
 
 movies = [
@@ -281,7 +287,6 @@ movies = [
     'PULP FICTION',
     'GLADIATOR',
     'THE DEPARTED',
-    'INTERSTELLAR',
     'BACK TO THE FUTURE',
     'GOODFELLAS',
     'CASINO',

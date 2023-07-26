@@ -1,0 +1,58 @@
+name: Application CI/CD
+
+on:
+  push:
+    branches: [ "master" ]
+    paths:
+      - 'app/**'
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v3
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-region: ${{ secrets.AWS_REGION }}
+        role-to-assume: ${{ secrets.ROLE_TO_ASSUME }}
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Build, tag, and push image to Amazon ECR
+      id: build-image
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY: hangman
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+    
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+
+    - name: Terraform Init
+      run: terraform init
+
+    - name: Terraform Plan
+      env:
+        TF_VAR_db_name: ${{ secrets.DB_NAME }}
+        TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
+        TF_VAR_db_username: ${{ secrets.DB_USERNAME }}
+        TF_VAR_app_secret_key: ${{ secrets.APP_SECRET_KEY }}
+      run: terraform plan -var="docker_image=${{ steps.build-image.outputs.image }}"
+
+    - name: Terraform Apply
+      env:
+        TF_VAR_db_name: ${{ secrets.DB_NAME }}
+        TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
+        TF_VAR_db_username: ${{ secrets.DB_USERNAME }}
+        TF_VAR_app_secret_key: ${{ secrets.APP_SECRET_KEY }}
+      run: terraform apply -auto-approve -var="docker_image=${{ steps.build-image.outputs.image }}"
