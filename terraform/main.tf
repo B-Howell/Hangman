@@ -1,10 +1,8 @@
 terraform {
-  required_version = ">= 0.13"
-
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = ">= 4.0.0, < 5.0.0"
+      version = ">= 4.0, < 5.0"
     }
   }
   backend "s3" {
@@ -16,9 +14,13 @@ terraform {
   }
 }
 
+# I created this module with SSO in mind instead of using
+# access keys to avoid the use of long term credentials.
+# When you log into the CLI with SSO replace "profile"
+# with the name of your own.
+
 provider "aws" {
   region  = "us-east-1"
-  profile = "terraform"
 }
 
 # Variables passed into Terraform from GitHub Secrets #
