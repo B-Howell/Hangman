@@ -48,18 +48,19 @@ jobs:
     - name: Terraform Plan
       working-directory: ./terraform
       env:
-          TF_VAR_db_name: ${{ secrets.DB_NAME }}
-          TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
-          TF_VAR_db_username: ${{ secrets.DB_USERNAME }}
-          TF_VAR_app_secret_key: ${{ secrets.APP_SECRET_KEY }}
-      run: terraform plan -var="docker_image=${{ steps.build-image.outputs.image }}"
-      
+        DB_NAME: ${{ secrets.DB_NAME }}
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        DB_USERNAME: ${{ secrets.DB_USERNAME }}
+        APP_SECRET_KEY: ${{ secrets.APP_SECRET_KEY }}
+      run: terraform plan -var="db-name=${DB_NAME}" -var="db-password=${DB_PASSWORD}" -var="db-username=${DB_USERNAME}" -var="app-secret-key=${APP_SECRET_KEY}" -var="docker_image=${{ steps.build-image.outputs.image }}"
+    
     - name: Terraform Apply
       working-directory: ./terraform
       env:
-          TF_VAR_db_name: ${{ secrets.DB_NAME }}
-          TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
-          TF_VAR_db_username: ${{ secrets.DB_USERNAME }}
-          TF_VAR_app_secret_key: ${{ secrets.APP_SECRET_KEY }}
-      run: terraform apply -auto-approve -var="docker_image=${{ steps.build-image.outputs.image }}"
+        DB_NAME: ${{ secrets.DB_NAME }}
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        DB_USERNAME: ${{ secrets.DB_USERNAME }}
+        APP_SECRET_KEY: ${{ secrets.APP_SECRET_KEY }}
+      run: terraform apply -auto-approve -var="db-name=${DB_NAME}" -var="db-password=${DB_PASSWORD}" -var="db-username=${DB_USERNAME}" -var="app-secret-key=${APP_SECRET_KEY}" -var="docker_image=${{ steps.build-image.outputs.image }}"
+    
       
