@@ -23,7 +23,9 @@ provider "aws" {
   region  = "us-east-1"
 }
 
-# Variables passed into Terraform from GitHub Secrets #
+# Variables passed into Terraform from GitHub Secrets -#
+# GitHub Actions will pull the tag of the latest image #
+# from the respository --------------------------------#
 
 variable "db-name" {}
 variable "db-username" {}
