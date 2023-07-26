@@ -299,7 +299,8 @@ movies = [
     'THE TERMINATOR',
     'THE NOTEBOOK',
     'MULAN',
-    'TARZAN'
+    'TARZAN',
+    'SCARFACE'
 ]
 
 books = [
