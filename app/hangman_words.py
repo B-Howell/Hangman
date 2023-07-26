@@ -227,7 +227,8 @@ brands = [
     'LOUIS VUITTON',
     'CALVIN KLEIN',
     'TESLA',
-    'REESES'
+    'REESES',
+    'KLEENEX'
 ]
 
 cities = [
