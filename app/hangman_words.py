@@ -298,7 +298,8 @@ movies = [
     'PIRATES OF THE CARIBBEAN',
     'THE TERMINATOR',
     'THE NOTEBOOK',
-    'MULAN'
+    'MULAN',
+    'TARZAN'
 ]
 
 books = [
