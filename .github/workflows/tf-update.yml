@@ -7,7 +7,7 @@ on:
       - 'terraform/**'
 
 jobs:
-  apply_terraform_changes:
+  plan_and_apply:
     runs-on: ubuntu-latest
 
     steps:
@@ -19,6 +19,11 @@ jobs:
       with:
         aws-region: ${{ secrets.AWS_REGION }}
         role-to-assume: ${{ secrets.ROLE_TO_ASSUME }}
+
+    - name: Get latest image tag
+      id: latest_image
+      run: |
+        echo "::set-output name=tag::$(aws ecr describe-images --repository-name hangman --query 'sort_by(imageDetails,& imagePushedAt)[-1].imageTags[0]' --output text)"
 
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v2
@@ -34,8 +39,7 @@ jobs:
         DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
         DB_USERNAME: ${{ secrets.DB_USERNAME }}
         APP_SECRET_KEY: ${{ secrets.APP_SECRET_KEY }}
-      run: terraform plan -var="db-name=${DB_NAME}" -var="db-password=${DB_PASSWORD}" -var="db-username=${DB_USERNAME}" -var="app-secret-key=${APP_SECRET_KEY}" -var="docker_image=185666942958.dkr.ecr.us-east-1.amazonaws.com/hangman:latest"
-    
+      run: terraform plan -var="db-name=${DB_NAME}" -var="db-password=${DB_PASSWORD}" -var="db-username=${DB_USERNAME}" -var="app-secret-key=${APP_SECRET_KEY}" -var="docker_image=185666942958.dkr.ecr.us-east-1.amazonaws.com/hangman:${{ steps.latest_image.outputs.tag }}"
 
     - name: Terraform Apply
       working-directory: ./terraform
@@ -44,4 +48,4 @@ jobs:
         DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
         DB_USERNAME: ${{ secrets.DB_USERNAME }}
         APP_SECRET_KEY: ${{ secrets.APP_SECRET_KEY }}
-      run: terraform apply -auto-approve -var="db-name=${DB_NAME}" -var="db-password=${DB_PASSWORD}" -var="db-username=${DB_USERNAME}" -var="app-secret-key=${APP_SECRET_KEY}" -var="docker_image=185666942958.dkr.ecr.us-east-1.amazonaws.com/hangman:latest"
+      run: terraform apply -auto-approve -var="db-name=${DB_NAME}" -var="db-password=${DB_PASSWORD}" -var="db-username=${DB_USERNAME}" -var="app-secret-key=${APP_SECRET_KEY}" -var="docker_image=185666942958.dkr.ecr.us-east-1.amazonaws.com/hangman:${{ steps.latest_image.outputs.tag }}"
