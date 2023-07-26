@@ -526,3 +526,4 @@ resource "aws_appautoscaling_policy" "auto_scaling_policy" {
   }
 }
 
+#-----------------------------------------------------------#
