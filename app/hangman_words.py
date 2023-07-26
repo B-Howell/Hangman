@@ -358,6 +358,7 @@ tv_shows = [
     'THE TWILIGHT ZONE',
     'TED LASSO',
     'PEAKY BLINDERS',
+    'SONS OF ANARCHY'
 ]
 
 alcohol = [
