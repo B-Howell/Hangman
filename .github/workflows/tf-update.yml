@@ -8,6 +8,9 @@ on:
 
 jobs:
   plan_and_apply:
+    permissions:
+      id-token: write
+      contents: read
     runs-on: ubuntu-latest
 
     steps:
