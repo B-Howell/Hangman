@@ -225,7 +225,8 @@ brands = [
     'KENTUCKY FRIED CHICKEN',
     'TOMMY HILFIGER',
     'LOUIS VUITTON',
-    'CALVIN KLEIN'
+    'CALVIN KLEIN',
+    'TESLA'
 ]
 
 cities = [
