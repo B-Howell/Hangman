@@ -18,10 +18,6 @@ variable "container-port" {
   default = 5000
 }
 
-variable "container-uri" {
-  default = "185666942958.dkr.ecr.us-east-1.amazonaws.com/hangman:v8.7"
-}
-
 variable "tg-name" {
   default = "Hangman-TG"
 }
