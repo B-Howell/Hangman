@@ -5,3 +5,43 @@ on:
     branches: [ "master" ]
     paths:
       - 'terraform/**'
+
+jobs:
+  apply_terraform_changes:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v3
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-region: ${{ secrets.AWS_REGION }}
+        role-to-assume: ${{ secrets.ROLE_TO_ASSUME }}
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+
+    - name: Terraform Init
+      working-directory: ./terraform
+      run: terraform init
+
+    - name: Terraform Plan
+      working-directory: ./terraform
+      env:
+        DB_NAME: ${{ secrets.DB_NAME }}
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        DB_USERNAME: ${{ secrets.DB_USERNAME }}
+        APP_SECRET_KEY: ${{ secrets.APP_SECRET_KEY }}
+      run: terraform plan -var="db-name=${DB_NAME}" -var="db-password=${DB_PASSWORD}" -var="db-username=${DB_USERNAME}" -var="app-secret-key=${APP_SECRET_KEY}" -var="docker_image=185666942958.dkr.ecr.us-east-1.amazonaws.com/hangman:latest"
+    
+
+    - name: Terraform Apply
+      working-directory: ./terraform
+      env:
+        DB_NAME: ${{ secrets.DB_NAME }}
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        DB_USERNAME: ${{ secrets.DB_USERNAME }}
+        APP_SECRET_KEY: ${{ secrets.APP_SECRET_KEY }}
+      run: terraform apply -auto-approve -var="db-name=${DB_NAME}" -var="db-password=${DB_PASSWORD}" -var="db-username=${DB_USERNAME}" -var="app-secret-key=${APP_SECRET_KEY}" -var="docker_image=185666942958.dkr.ecr.us-east-1.amazonaws.com/hangman:latest"
