@@ -297,7 +297,8 @@ movies = [
     'THE WIZARD OF OZ',
     'PIRATES OF THE CARIBBEAN',
     'THE TERMINATOR',
-    'THE NOTEBOOK'
+    'THE NOTEBOOK',
+    'MULAN'
 ]
 
 books = [
