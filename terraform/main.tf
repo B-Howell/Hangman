@@ -24,6 +24,7 @@ provider "aws" {
 }
 
 # Variables passed into Terraform from GitHub Secrets -#
+
 # GitHub Actions will pull the tag of the latest image #
 # from the respository --------------------------------#
 
@@ -46,9 +47,7 @@ data "aws_acm_certificate" "cert" {
   statuses = ["ISSUED"]
 }
 
-#----------------------------------------------------------#
 #--------------------------VPC-----------------------------#
-#----------------------------------------------------------#
 # VPC will use a /23 prefix for a total of 512 IP's in     #
 # the VPC. The subnets will use a /27 prefix for 32 IP's   #
 # in each subnet. This will allow for a total of 16        #
@@ -178,7 +177,6 @@ resource "aws_route_table_association" "private_rt_2" {
 #-------------Application-Load-Balancer-SG----------------#
 #- Any Traffic -> ALB ------------------------------------#
 #- Local       -> ALB ------------------------------------#
-#- VPC Link    -> ALB ------------------------------------#
 #- ALB         -> Elastic Container Service --------------#
 #---------------------------------------------------------#
 
@@ -318,7 +316,7 @@ resource "aws_db_instance" "mysql_db" {
   parameter_group_name = "default.mysql5.7"
   publicly_accessible  = false
   skip_final_snapshot  = true
-  multi_az             = true
+  multi_az             = false
   db_subnet_group_name = aws_db_subnet_group.db_subnet_group.name
   vpc_security_group_ids = [aws_security_group.rds-sg.id]
 }
