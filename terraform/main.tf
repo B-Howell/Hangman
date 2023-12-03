@@ -419,8 +419,8 @@ resource "aws_ecs_task_definition" "task_definition" {
         {
           "protocol": "tcp",
           "appProtocol": "http",
-          "containerPort": ${var.container-port},
-          "hostPort": ${var.container-port}
+          "containerPort": 5000,
+          "hostPort": 5000
         }
       ],
       "environment": [
