@@ -1,5 +1,16 @@
-variable "api-domain-name" {
-  default = "hangman-api.brettmhowell.com"
+variable "state_bucket" {
+  default = "bhcrc-tfstate"
+}
+
+variable "state_file" {
+  default = "hangman.tfstate"
+}
+
+variable "region" {
+  default = "us-east-1"
+}
+variable "sso_profile" {
+  default = "terraform"
 }
 
 variable "alb-domain-name" {

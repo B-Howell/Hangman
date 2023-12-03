@@ -1,60 +1,52 @@
 terraform {
+  
   required_providers {
     aws = {
       source  = "hashicorp/aws"
       version = ">= 4.0, < 5.0"
     }
   }
+  
   backend "s3" {
-    bucket  = "bhcrc-tfstate"
-    key     = "hangman.tfstate"
-    region  = "us-east-1"
-    profile = "terraform"
-
+    bucket  = var.state_bucket
+    key     = var.state_file
+    region  = var.region
+    profile = var.sso_profile
   }
 }
 
-# I created this module with SSO in mind instead of using
-# access keys to avoid the use of long term credentials.
-# When you log into the CLI with SSO replace "profile"
-# with the name of your own.
-
 provider "aws" {
-  region  = "us-east-1"
+  region  = var.region
 }
 
-# Variables passed into Terraform from GitHub Secrets -#
+# I created this module with SSO in mind instead of using access keys to avoid the use of long term credentials.
+# When you log into the CLI with SSO replace 'var.profile' with the name of your own.
 
-# GitHub Actions will pull the tag of the latest image #
-# from the respository --------------------------------#
-
+# Variables passed into Terraform from GitHub Secrets
 variable "db-name" {}
 variable "db-username" {}
 variable "db-password" {}
 variable "app-secret-key" {}
+
+# GitHub Actions will pull the tag of the latest image 
+# from the respository
 variable "docker_image" {}
 
-# Resources created in AWS Console before using this Terraform Configuration: #
-# -- ACM Certificate for my API Gateway Custom Domain ------------------------#
-# -- ECR private repo with my app container ----------------------------------#
-
-data "aws_api_gateway_domain_name" "api-domain" {
-  domain_name = var.api-domain-name
-}
+# Resources created in AWS Console before using this Terraform Configuration:
+# - ACM Certificate for my Application Load Balancer Custom Domain 
 
 data "aws_acm_certificate" "cert" {
-  domain = "hangman-alb.brettmhowell.com"
+  domain = var.alb-domain-name
   statuses = ["ISSUED"]
 }
 
-#--------------------------VPC-----------------------------#
-# VPC will use a /23 prefix for a total of 512 IP's in     #
-# the VPC. The subnets will use a /27 prefix for 32 IP's   #
-# in each subnet. This will allow for a total of 16        #
-# subnets. We will start by creating 4 (2 Public and 2     #
-# Private), which should leave sufficient room for         #
-# expansion if necessary. ---------------------------------#
-#----------------------------------------------------------#
+#============================== VPC ==================================#
+# VPC will use a /23 prefix for a total of 512 IP's in the VPC. The   #
+# subnets will use a /27 prefix for 32 IP's in each subnet. This      #
+# will allow for a total of 16 subnets. We will start by creating 4   #
+# (2 Public and 2 Private), which should leave sufficient room for    #
+# expansion if necessary.                                             #
+#=====================================================================#
 
 resource "aws_vpc" "vpc" {
   cidr_block           = "10.16.0.0/23"
@@ -66,7 +58,7 @@ resource "aws_vpc" "vpc" {
   }
 }
 
-#--------------------Internet-Gateway----------------------#
+#======================== Internet-Gateway ===========================#
 
 resource "aws_internet_gateway" "internet_gateway" {
   vpc_id = aws_vpc.vpc.id
@@ -75,10 +67,10 @@ resource "aws_internet_gateway" "internet_gateway" {
   }
 }
 
-#---------------------Public-Subnets-----------------------#
-# Creates public subnets with a route to the internet      #
-# gateway. These subnets will host my ECS Fargate Cluster. #
-#----------------------------------------------------------#
+#========================= Public-Subnets ============================#
+# Creates public subnets with a route to the internet gateway. These  #
+# subnets will host my ECS Fargate Cluster.                           #
+#=====================================================================#
 
 resource "aws_subnet" "public_1" {
   vpc_id                  = aws_vpc.vpc.id
@@ -100,7 +92,7 @@ resource "aws_subnet" "public_2" {
   }
 }
 
-#----------------Public Subnet Route Table-----------------#
+#==================== Public Subnet Route Table ======================#
 
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.vpc.id
@@ -125,9 +117,9 @@ resource "aws_route_table_association" "public_rt_2" {
   route_table_id = aws_route_table.public.id
 }
 
-#---------------------Private-Subnets-----------------------#
-#- Creates Private Subnets that will host the ECS Cluster.  #
-#-----------------------------------------------------------#
+#========================= Private-Subnets ===========================#
+# Creates Private Subnets that will host the ECS Cluster.             #
+#=====================================================================#
 
 resource "aws_subnet" "private_1" {
   vpc_id                  = aws_vpc.vpc.id
@@ -149,7 +141,7 @@ resource "aws_subnet" "private_2" {
   }
 }
 
-#----------------Private Subnet Route Table----------------#
+#=================== Private Subnet Route Table =======================#
 
 resource "aws_route_table" "private" {
   vpc_id = aws_vpc.vpc.id
@@ -169,16 +161,16 @@ resource "aws_route_table_association" "private_rt_2" {
   route_table_id = aws_route_table.private.id
 }
 
-#-------------------Security-Groups-----------------------#
-#- Creates the Security Groups Necessary for the ---------#
-#- configuration to communicate properly -----------------#
-#---------------------------------------------------------#
+#======================== Security-Groups ============================#
+#- Creates the Security Groups Necessary for the configuration -------#
+#- to communicate properly and keep resources secure. ----------------#
+#=====================================================================#
 
-#-------------Application-Load-Balancer-SG----------------#
-#- Any Traffic -> ALB ------------------------------------#
-#- Local       -> ALB ------------------------------------#
-#- ALB         -> Elastic Container Service --------------#
-#---------------------------------------------------------#
+#================== Application-Load-Balancer-SG =====================#
+#- Any Traffic -> ALB ------------------------------------------------#
+#- Local       -> ALB ------------------------------------------------#
+#- ALB         -> Elastic Container Service --------------------------#
+#=====================================================================#
 
 resource "aws_security_group" "alb-sg" {
   name        = "alb-sg-tf"
@@ -216,13 +208,13 @@ resource "aws_security_group_rule" "egress-to-ecs" {
   description = "ALB to Elastic Container Service"
 }
 
-#--------------Elastic-Container-Service-SG---------------#
-#- ALB -> ECS --------------------------------------------#
-#- ECS -> ECS --------------------------------------------#
-#- ECS -> ALB --------------------------------------------#
-#- ECS -> RDS --------------------------------------------#
-#- ECS -> Anywhere ---------------------------------------#
-#---------------------------------------------------------#
+#=================== Elastic-Container-Service-SG ====================#
+#- ALB -> ECS --------------------------------------------------------#
+#- ECS -> ECS --------------------------------------------------------#
+#- ECS -> ALB --------------------------------------------------------#
+#- ECS -> RDS --------------------------------------------------------#
+#- ECS -> Anywhere ---------------------------------------------------#
+#=====================================================================#
 
 resource "aws_security_group" "ecs-sg" {
   name        = "ecs-sg-tf"
@@ -280,9 +272,9 @@ resource "aws_security_group_rule" "egress-to-anywhere" {
   description = "ECS to Anywhere"
 }
 
-#------------------------RDS-SG--------------------------#
-#- ECS -> RDS (MySQL) -----------------------------------#
-#--------------------------------------------------------#
+#============================= RDS-SG ================================#
+#- ECS -> RDS (MySQL) ------------------------------------------------#
+#=====================================================================#
 
 resource "aws_security_group" "rds-sg" {
   name        = "rds-sg-tf"
@@ -300,12 +292,13 @@ resource "aws_security_group_rule" "ingress-from-ecs" {
   description              = "ECS to RDS (MySQL)"
 }
 
-#----------------------------RDS----------------------------#
-#- Creates the MySQL Database that ECS Fargate will connect-#
-#- to on port 3306 -----------------------------------------#
-#-----------------------------------------------------------#
+#================================ RDS ================================#
+#- Creates the MySQL Database that ECS Fargate will connect to on ----#
+#- port 3306 ---------------------------------------------------------#
+#=====================================================================#
 
 resource "aws_db_instance" "mysql_db" {
+  identifier           = "hangman"
   allocated_storage    = 5
   engine               = "mysql"
   engine_version       = "5.7"
@@ -330,11 +323,11 @@ resource "aws_db_subnet_group" "db_subnet_group" {
   }
 }
 
-#----------------Application-Load-Balancer-----------------#
-# Creates the Target Group that will point towards the ECS #
-# Cluster and the Application Load Balancer that sends ----#
-# traffic to the target group, listening in HTTP:80 -------#
-#----------------------------------------------------------#
+#==================== Application-Load-Balancer ======================#
+# Creates the Target Group that will point towards the ECS Cluster ---#
+# and the Application Load Balancer that sends traffic to the target -#
+# group, listening in HTTP:80 ----------------------------------------#
+#=====================================================================#
 
 resource "aws_lb_target_group" "target-group" {
   name        = var.tg-name
@@ -378,15 +371,15 @@ resource "aws_lb_listener" "https_listener" {
 }
 
 
-#-----------------Elastic-Container-Service-----------------#
-#- Creates an ECS Cluster for the app to run in aswell as:  #
-#- TASK DEFINITION - Pulls image from ECR Repo, defines the #
-#- compute resources that will be used and exposes the port #
-#- SERVICE - Specifies the amount of tasks to run, Attaches #
-#- the ALB and defines the network to run in. --------------#
-#- AUTO-SCALING - Puts the service in an auto scaling group #
-#- that can expand from 1-4 tasks based on CPU Utilization -#
-#-----------------------------------------------------------#
+#====================== Elastic-Container-Service ====================#
+#- Creates an ECS Cluster for the app to run in aswell as: -----------#
+#- TASK DEFINITION - Pulls image from ECR Repo, defines the compute --#
+#- resources that will be used and exposes the port ------------------#
+#- SERVICE - Specifies the amount of tasks to run, Attaches the ALB --#
+#- and defines the network to run in. --------------------------------#
+#- AUTO-SCALING - Puts the service in an auto scaling group that can -#
+#- expand from 1-4 tasks based on CPU Utilization --------------------#
+#=====================================================================#
 
 resource "aws_ecs_cluster" "cluster" {
   name = "Hangman-Cluster"
@@ -524,4 +517,4 @@ resource "aws_appautoscaling_policy" "auto_scaling_policy" {
   }
 }
 
-#-----------------------------------------------------------#
+#=====================================================================#
