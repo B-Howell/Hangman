@@ -16,7 +16,7 @@ terraform {
 }
 
 provider "aws" {
-  region  = var.region
+  region  = "us-east-1"
 }
 
 # I created this module with SSO in mind instead of using access keys to avoid the use of long term credentials.
