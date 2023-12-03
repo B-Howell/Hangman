@@ -8,10 +8,10 @@ terraform {
   }
   
   backend "s3" {
-    bucket  = var.state_bucket
-    key     = var.state_file
-    region  = var.region
-    profile = var.sso_profile
+    bucket  = "bhcrc-tfstate"
+    key     = "hangman.tfstate"
+    region  = "us-east-1"
+    profile = "terraform"
   }
 }
 
