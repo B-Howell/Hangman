@@ -6,9 +6,6 @@ variable "state_file" {
   default = "hangman.tfstate"
 }
 
-variable "region" {
-  default = "us-east-1"
-}
 variable "sso_profile" {
   default = "terraform"
 }
