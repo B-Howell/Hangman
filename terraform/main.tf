@@ -19,8 +19,11 @@ provider "aws" {
   region  = "us-east-1"
 }
 
-# I created this module with SSO in mind instead of using access keys to avoid the use of long term credentials.
-# When you log into the CLI with SSO replace 'var.profile' with the name of your own.
+#========================================================================#
+# I created this module with SSO in mind instead of using access keys to # 
+# avoid the use of long term credentials. When you log into the CLI with # 
+# SSO replace 'var.profile' with the name of your own.                   #
+#========================================================================#
 
 # Variables passed into Terraform from GitHub Secrets
 variable "db-name" {}
