@@ -11,7 +11,6 @@ terraform {
     bucket  = "bhcrc-tfstate"
     key     = "hangman.tfstate"
     region  = "us-east-1"
-    profile = "terraform"
   }
 }
 
