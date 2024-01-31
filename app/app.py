@@ -18,6 +18,7 @@ class User:
         self.username = username
         self.password = password
 
+# Get connection to SQL DB
 def test_db_connection():
     cursor = None
     try:
